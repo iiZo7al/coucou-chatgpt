@@ -2,6 +2,7 @@
 
 mod openai;
 mod codex_chat;
+mod openbot;
 mod files;
 mod hooks;
 mod integrations;
@@ -241,7 +242,7 @@ fn approval_decline(app: AppHandle, request_id: String) {
 
 // ── Chat, files and secrets ───────────────────────────────────────────────────
 
-/// One chat turn. Prefer the user's ChatGPT/Codex plan login; fall back to an API key.
+/// One chat turn. OpenBot is the companion/provider manager; Mochi uses the same local Codex login state.
 #[tauri::command]
 async fn chat_send(
     shared: State<'_, Shared>,
@@ -250,10 +251,21 @@ async fn chat_send(
     context: Option<ChatContext>,
 ) -> Result<ChatReply, String> {
     let model = shared.settings.lock().unwrap().model.clone();
+
+    // OpenBot is the primary companion. Start it when installed so provider/model
+    // management stays in one place. Codex credentials remain owned by Codex and
+    // are shared naturally with OpenBot; Coucou never reads or copies them.
+    if openbot::status().installed {
+        openbot::launch()?;
+    }
+
     if codex_chat::login_status().is_ok() {
         codex_chat::send(&model, query, context).await
-    } else {
+    } else if secrets::present("openai-api-key") {
+        // Compatibility fallback for existing Coucou installs.
         openai::send(&chat, &model, query, context).await
+    } else {
+        Err("OpenBot is ready, but Codex is not signed in. Open OpenBot → Providers → Codex and sign in, then try again.".into())
     }
 }
 
@@ -265,6 +277,12 @@ fn chatgpt_login() -> Result<(), String> { codex_chat::start_login() }
 
 #[tauri::command]
 fn codex_installed() -> bool { codex_chat::installed() }
+
+#[tauri::command]
+fn openbot_status() -> openbot::OpenBotStatus { openbot::status() }
+
+#[tauri::command]
+fn openbot_launch() -> Result<(), String> { openbot::launch() }
 
 #[tauri::command]
 fn chat_reset(chat: State<Chat>) {
@@ -416,6 +434,8 @@ pub fn run() {
             chatgpt_status,
             chatgpt_login,
             codex_installed,
+            openbot_status,
+            openbot_launch,
             ingest_file,
             secret_present,
             secret_set,
