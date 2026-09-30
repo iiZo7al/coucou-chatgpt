@@ -106,8 +106,7 @@ final class KeychainStore: @unchecked Sendable {
 final class ClaudeService {
     static let shared = ClaudeService()
 
-    private let endpoint = URL(string: "https://api.anthropic.com/v1/messages")!
-    private let anthropicVersion = "2023-06-01"
+    private let endpoint = URL(string: "https://api.openai.com/v1/responses")!
     private let model = "claude-sonnet-4-6"
 
     var apiKey: String? { KeychainStore.shared.get("openai-api-key") }
@@ -233,7 +232,6 @@ final class ClaudeService {
         var request = URLRequest(url: endpoint)
         request.httpMethod = "POST"
         request.setValue(key, forHTTPHeaderField: "x-api-key")
-        request.setValue(anthropicVersion, forHTTPHeaderField: "anthropic-version")
         request.setValue("application/json", forHTTPHeaderField: "content-type")
         _ = beta
         request.httpBody = try JSONSerialization.data(withJSONObject: body)
@@ -277,7 +275,7 @@ final class ClaudeService {
     // MARK: - Structured result handler
 
     private func handleResult(_ data: Data, state: AppState) async {
-        // Extract text from Anthropic response (may contain tool_use / web_search_tool_result blocks)
+        // Extract text from OpenAI response (may contain tool_use / web_search_tool_result blocks)
         guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
               let content = json["content"] as? [[String: Any]],
               let textBlock = content.first(where: { $0["type"] as? String == "text" }),
