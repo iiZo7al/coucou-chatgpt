@@ -145,7 +145,7 @@ fn status_error(code: u16, unauthorised_hint: &str) -> String {
 
 async fn poll_stripe(app: AppHandle) {
     let Some(key) = secrets::get("stripe-api-key") else { return };
-    let auth = format!("Basic {}", crate::claude::base64_for(format!("{key}:").as_bytes()));
+    let auth = format!("Basic {}", crate::openai::base64_for(format!("{key}:").as_bytes()));
     let http = client();
 
     let balance = http
