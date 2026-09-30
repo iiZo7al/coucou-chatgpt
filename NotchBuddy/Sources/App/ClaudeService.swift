@@ -146,24 +146,23 @@ final class OpenAIService {
             case .window(let app, let title, let url):
                 var text = "Context — App: \(app), Window: \(title)"
                 if let url = url { text += ", URL: \(url)" }
-                userContent.append(["type": "text", "text": text])
+                userContent.append(["type": "input_text", "text": text])
             case .file(let name, let fileURL):
                 if let fileURL = fileURL, let block = readFileAsBlock(url: fileURL) {
                     userContent.append(block)
                 }
-                userContent.append(["type": "text", "text": "File: \(name)"])
+                userContent.append(["type": "input_text", "text": "File: \(name)"])
             }
         }
-        userContent.append(["type": "text", "text": query])
+        userContent.append(["type": "input_text", "text": query])
 
         conversationMessages.append(["role": "user", "content": userContent])
 
         let body: [String: Any] = [
             "model": model,
-            "max_tokens": 4096,
             "tools": webSearchTools,
-            "system": systemPrompt,
-            "messages": conversationMessages,
+            "instructions": systemPrompt,
+            "input": conversationMessages,
         ]
 
         do {
@@ -189,14 +188,14 @@ final class OpenAIService {
             var text = "App: \(appName)\nWindow title: \(title)"
             if let url = url { text += "\nURL: \(url)" }
             text += "\n\nRequest: \(query)"
-            userContent.append(["type": "text", "text": text])
+            userContent.append(["type": "input_text", "text": text])
         case .file(let name, let fileURL):
             if let fileURL = fileURL, let fileBlock = readFileAsBlock(url: fileURL) {
                 userContent.append(fileBlock)
             }
-            userContent.append(["type": "text", "text": "File: \(name)\n\nRequest: \(query)"])
+            userContent.append(["type": "input_text", "text": "File: \(name)\n\nRequest: \(query)"])
         case nil:
-            userContent.append(["type": "text", "text": query])
+            userContent.append(["type": "input_text", "text": query])
         }
 
         let system = """
@@ -212,10 +211,9 @@ final class OpenAIService {
 
         let body: [String: Any] = [
             "model": model,
-            "max_tokens": 1024,
             "tools": tools,
-            "system": system,
-            "messages": [["role": "user", "content": userContent]],
+            "instructions": system,
+            "input": [["role": "user", "content": userContent]],
         ]
 
         do {
@@ -350,7 +348,7 @@ final class OpenAIService {
             // Text/code — inline as text if <= 200 KB
             guard data.count <= 200_000,
                   let text = String(data: data, encoding: .utf8) else { return nil }
-            return ["type": "text", "text": "File contents:\n\(text)"]
+            return ["type": "input_text", "text": "File contents:\n\(text)"]
         }
     }
 }
