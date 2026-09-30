@@ -958,7 +958,7 @@ struct IntegrationCardView: View {
     private var isConfigured: Bool {
         switch task.id {
         case "integration_claude":
-            let url = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent(".claude/settings.json")
+            let url = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent(".codex/config.toml")
             guard let data = try? Data(contentsOf: url),
                   let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
                   let hooks = json["hooks"] as? [String: Any],
@@ -2683,7 +2683,7 @@ struct SettingsIslandView: View {
 
     private var claudeConnected: Bool {
         let url = FileManager.default.homeDirectoryForCurrentUser
-            .appendingPathComponent(".claude/settings.json")
+            .appendingPathComponent(".codex/config.toml")
         guard let data = try? Data(contentsOf: url),
               let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
               let hooks = json["hooks"] as? [String: Any],
