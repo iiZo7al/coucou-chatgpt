@@ -11,7 +11,7 @@ Règle d'or : **vérifier la doc officielle au moment d'implémenter**. Les form
 
 ### Architecture
 ```
-claude (terminal, VS Code, app ChatGPT)
+codex (terminal, VS Code, app ChatGPT)
   └─ hook "command" ─► nb-hook (petit exécutable Swift, livré avec l'app)
                          └─ socket Unix ─► Notch Buddy.app
                          ◄─ décision (pour PermissionRequest)
@@ -27,11 +27,8 @@ claude (terminal, VS Code, app ChatGPT)
 | `SessionStart` | crée la tâche (nom = dossier), état `idle` |
 | `UserPromptSubmit` | état `thinking`, ligne du défilé = début du prompt |
 | `PreToolUse` | état `working`, ligne = outil + cible (« Edit Invoice.swift », « Bash npm test ») |
-| `PostToolUse` / `PostToolUseFailure` | met à jour la ligne ; un échec reste `working` |
 | `PermissionRequest` | alerte `approval` (voir plus bas) |
-| `Notification` | selon le type : attente d'entrée → `question` si une question est posée, sinon rien ; limite d'usage → `ratelimit` |
 | `Stop` | état `finished` → vue `finished` 5,2 s, résumé = dernière phrase utile de la réponse si disponible |
-| `StopFailure` (si présent dans la doc) | alerte `error` |
 | `SubagentStart` / `SubagentStop` | afficher « + sous-agent » dans le défilé |
 | `SessionEnd` | retire la tâche |
 
@@ -40,7 +37,7 @@ Vérifier dans la doc la liste exacte des événements et leurs champs.
 ### Approuver depuis le notch
 - Sur `PermissionRequest`, `nb-hook` **attend** la décision de l'app (défaut 110 s, réglable) puis écrit sur stdout le JSON de décision du hook (d'après la doc actuelle : `hookSpecificOutput` avec `decision.behavior` = `allow` ou `deny`). Timeout du hook dans settings.json : décision + 10 s.
 - Pas de réponse avant le délai, ou app fermée → aucune sortie, le terminal affiche sa demande habituelle. Si Louis répond dans le terminal, l'app retire l'alerte au prochain événement de la session.
-- Un bug a été signalé où `deny` était ignoré sur `PermissionRequest` (issue GitHub openais/claude-code #19298). **Tester allow et deny** ; si deny ne marche pas, basculer la décision sur `PreToolUse` (`permissionDecision`) pour les outils concernés.
+- Un bug a été signalé où `deny` était ignoré sur `PermissionRequest` (issue GitHub Codex documentation). **Tester allow et deny** ; si deny ne marche pas, basculer la décision sur `PreToolUse` (`permissionDecision`) pour les outils concernés.
 - « Toujours autoriser » : si la doc permet de renvoyer une règle de permission persistante, l'utiliser. Sinon l'app garde sa propre liste (projet + outil + motif de commande) et répond `allow` automatiquement ensuite. Liste visible et supprimable dans les réglages.
 - Raccourcis Y / N quand la vue `approval` est ouverte.
 
@@ -59,8 +56,8 @@ Vérifier dans la doc la liste exacte des événements et leurs champs.
 Demande l'autorisation Automatisation la première fois (normal).
 
 ### Installation des hooks : procédure obligatoire
-1. Lire `~/.codex/settings.json` (le créer s'il n'existe pas).
-2. Copier en `~/.codex/settings.json.bak-AAAAMMJJ-HHMM`.
+1. Lire `~/.codex/hooks.json` (le créer s'il n'existe pas).
+2. Copier en `~/.codex/hooks.json.bak-AAAAMMJJ-HHMM`.
 3. **Fusionner** : ajouter les hooks Notch Buddy sans toucher aux hooks existants. Chemin de `nb-hook` entre guillemets (il contient un espace).
 4. Montrer le diff à Louis, attendre son OK, écrire.
 5. Bouton « Désinstaller les hooks » dans les réglages qui retire uniquement les entrées Notch Buddy.
@@ -111,7 +108,7 @@ Permissions : Enregistrement de l'écran (capture) et Automatisation (navigateur
 ## 5. API ChatGPT (recherche)
 
 - `POST https://api.openai.com/v1/messages`, en-têtes `x-api-key`, `openai-version`, `content-type: application/json` (versions à vérifier dans la doc).
-- Modèle par défaut : `claude-sonnet-5`, réglable dans les réglages. Vérifier la liste des modèles disponibles dans la doc.
+- Modèle par défaut : `OpenAI model configured in Coucou`, réglable dans les réglages. Vérifier la liste des modèles disponibles dans la doc.
 - Outil de recherche web côté serveur de l'API : l'identifiant de type à jour est dans la doc (au moment d'écrire, `web_search_20250305`) ; `max_uses` 5.
 - Prompt système (français) : répondre court, pour un affichage dans le notch, au format JSON strict :
   ```json
