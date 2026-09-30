@@ -44,7 +44,7 @@ Meet **Mochi**: a soft little squircle with big eyes that pops out of your notch
 
 <table>
 <tr>
-<td><img src="docs/media/codex.png" alt="Codex session"></td>
+<td><img src="docs/media/claude-code.png" alt="Codex session"></td>
 <td><img src="docs/media/stripe.png" alt="Stripe payments"></td>
 </tr>
 <tr>
