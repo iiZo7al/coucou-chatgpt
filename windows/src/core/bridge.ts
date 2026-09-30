@@ -60,12 +60,12 @@ export const Bridge = {
   /** Writes to %LOCALAPPDATA%\Coucou\coucou.log, next to the Rust lines. */
   log: (message: string) => call<void>("log_line", { message }),
 
-  // ── Claude Code hooks ─────────────────────────────────────────────────────
+  // ── Codex hooks ───────────────────────────────────────────────────────────
   hooksStatus: () => call<HookStatus>("hooks_status"),
   /** Diff to show before anything is written. `install: false` previews removal. */
   hooksPreview: (install: boolean) => callOrThrow<HookPreview>("hooks_preview", { install }),
   /**
-   * Writes ~/.claude/settings.json — only ever after an explicit click, and only
+   * Writes ~/.codex/hooks.json — only ever after an explicit click, and only
    * when the file still matches the preview the user looked at.
    */
   hooksApply: (install: boolean, fingerprint: string) =>
@@ -75,11 +75,11 @@ export const Bridge = {
     call<void>("approval_decision", { requestId, decision }),
   /** "The card is up" — until this lands the relay only waits a moment. */
   approvalAck: (requestId: string) => call<void>("approval_ack", { requestId }),
-  /** "Nobody can act on this" — Claude Code asks in the terminal right away. */
+  /** "Nobody can act on this" — Codex asks in the terminal right away. */
   approvalDecline: (requestId: string) => call<void>("approval_decline", { requestId }),
 
   // ── Chat, files, secrets ──────────────────────────────────────────────────
-  /** One chat turn. The API key and any file bytes never leave Rust. */
+  /** One chat turn. Authentication and any file bytes never leave Rust. */
   chatSend: (query: string, context: ChatContext | null) =>
     callOrThrow<{ text: string }>("chat_send", { query, context }),
   chatReset: () => call<void>("chat_reset"),
