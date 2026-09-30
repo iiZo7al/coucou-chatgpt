@@ -61,7 +61,7 @@ final class KeychainStore: @unchecked Sendable {
     private let lock = NSLock()
 
     private static let allKeys = [
-        "anthropic-api-key",
+        "openai-api-key",
         "resend-api-key", "resend-from",
         "n8n-url", "n8n-api-key",
         "vercel-token",
@@ -100,7 +100,7 @@ final class KeychainStore: @unchecked Sendable {
     }
 }
 
-// MARK: - Claude API
+// MARK: - OpenAI API
 
 @MainActor
 final class ClaudeService {
@@ -110,7 +110,7 @@ final class ClaudeService {
     private let anthropicVersion = "2023-06-01"
     private let model = "claude-sonnet-4-6"
 
-    var apiKey: String? { KeychainStore.shared.get("anthropic-api-key") }
+    var apiKey: String? { KeychainStore.shared.get("openai-api-key") }
 
     // Multi-turn conversation messages (for API)
     private var conversationMessages: [[String: Any]] = []
@@ -180,7 +180,7 @@ final class ClaudeService {
 
     func search(query: String, context: PromptContext?, state: AppState) async {
         guard let key = apiKey, !key.isEmpty else {
-            await showError("Anthropic API key missing. Open settings to configure it.", state: state)
+            await showError("OpenAI API key missing. Open settings to configure it.", state: state)
             return
         }
 
@@ -235,7 +235,7 @@ final class ClaudeService {
         request.setValue(key, forHTTPHeaderField: "x-api-key")
         request.setValue(anthropicVersion, forHTTPHeaderField: "anthropic-version")
         request.setValue("application/json", forHTTPHeaderField: "content-type")
-        if let beta { request.setValue(beta, forHTTPHeaderField: "anthropic-beta") }
+        _ = beta
         request.httpBody = try JSONSerialization.data(withJSONObject: body)
         request.timeoutInterval = 45
 
@@ -243,7 +243,7 @@ final class ClaudeService {
 
         guard let http = response as? HTTPURLResponse, http.statusCode == 200 else {
             let msg = String(data: data, encoding: .utf8) ?? "unknown error"
-            throw NSError(domain: "Claude", code: 0, userInfo: [NSLocalizedDescriptionKey: msg])
+            throw NSError(domain: "OpenAI", code: 0, userInfo: [NSLocalizedDescriptionKey: msg])
         }
         return data
     }
@@ -314,7 +314,7 @@ final class ClaudeService {
             // Fallback: show raw text in 3-line chunks
             let lines = cleanText.components(separatedBy: "\n").filter { !$0.isEmpty }.prefix(3)
             state.searchResult = SearchResult(
-                title: "Claude's response",
+                title: "ChatGPT response",
                 items: lines.map { ResultItem(label: $0, detail: "", url: nil) },
                 note: nil
             )
