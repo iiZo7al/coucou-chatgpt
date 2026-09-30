@@ -105,10 +105,10 @@ Permissions : Enregistrement de l'écran (capture) et Automatisation (navigateur
 
 ---
 
-## 5. API ChatGPT (recherche)
+## 5. OpenAI Responses API (ChatGPT)
 
-- `POST https://api.openai.com/v1/messages`, en-têtes `x-api-key`, `openai-version`, `content-type: application/json` (versions à vérifier dans la doc).
-- Modèle par défaut : `OpenAI model configured in Coucou`, réglable dans les réglages. Vérifier la liste des modèles disponibles dans la doc.
+- `POST https://api.openai.com/v1/responses` avec `Authorization: Bearer <OPENAI_API_KEY>` et `Content-Type: application/json`.
+- Modèle par défaut : `gpt-5.6-sol`, réglable dans les réglages. La recherche web utilise l’outil Responses API `web_search`.
 - Outil de recherche web côté serveur de l'API : l'identifiant de type à jour est dans la doc (au moment d'écrire, `web_search_20250305`) ; `max_uses` 5.
 - Prompt système (français) : répondre court, pour un affichage dans le notch, au format JSON strict :
   ```json
