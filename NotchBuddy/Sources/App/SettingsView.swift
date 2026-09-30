@@ -52,7 +52,7 @@ struct SettingsView: View {
                 // MARK: API
                 GroupBox("OpenAI API") {
                     VStack(alignment: .leading, spacing: 8) {
-                        SecureField("API key (sk-ant-…)", text: $apiKey)
+                        SecureField("API key (sk-…)", text: $apiKey)
                             .textFieldStyle(.roundedBorder)
                         Button("Save") {
                             KeychainStore.shared.set("openai-api-key", value: apiKey)
