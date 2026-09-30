@@ -98,7 +98,7 @@ Click the Coucou icon in the menu bar (macOS) or in the system tray (Windows) �
 
 | What | Why | Where the key goes |
 |---|---|---|
-| **Codex hooks** | live sessions and approvals | **Install hooks** — Coucou backs up `~/.codex/settings.json`, merges its hooks and shows you the diff before writing anything |
+| **Codex hooks** | live sessions and approvals | **Install hooks** — Coucou backs up `~/.codex/hooks.json`, merges its hooks and shows you the diff before writing anything |
 | **OpenAI API key** | chat and questions about files | Keychain / Windows Credential Manager |
 | Stripe, n8n, GitHub, Vercel, Resend, Notion, Cal.com | the integration pills | Keychain / Windows Credential Manager, all optional |
 
