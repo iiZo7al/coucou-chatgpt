@@ -86,6 +86,8 @@ export const Bridge = {
   chatgptStatus: () => callOrThrow<string>("chatgpt_status"),
   chatgptLogin: () => callOrThrow<void>("chatgpt_login"),
   codexInstalled: () => call<boolean>("codex_installed"),
+  openbotStatus: () => call<OpenBotStatus>("openbot_status"),
+  openbotLaunch: () => callOrThrow<void>("openbot_launch"),
   /** Copies a dropped file into the inbox. */
   ingestFile: (path: string) => callOrThrow<DroppedFile>("ingest_file", { path }),
   /** Only ever tells you whether a key exists — never its value. */
@@ -101,6 +103,12 @@ export const Bridge = {
   /** Tray → Pause. Stops the integration pollers, not just the island. */
   setPaused: (paused: boolean) => call<void>("set_paused", { paused }),
 };
+
+export interface OpenBotStatus {
+  installed: boolean;
+  running: boolean;
+  path: string | null;
+}
 
 export interface IntegrationUpdate {
   id: string;
