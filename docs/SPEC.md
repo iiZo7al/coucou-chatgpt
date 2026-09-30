@@ -195,7 +195,7 @@ Fenêtre Réglages (SwiftUI, simple) :
 
 ## 11. Jalons
 
-Chaque jalon se termine par build + capture + comparaison aux références + commit (voir CLAUDE.md).
+Chaque jalon se termine par build + capture + comparaison aux références + commit (voir AGENTS.md).
 
 - **M0 Base** : vérifier Xcode (`xcodebuild -version`), XcodeGen, `git init`, `project.yml`, app agent qui se lance et affiche le faux contenu. Menu Debug.
 - **M1 Island** : panel, détection du notch, 4 modes, règles §3, clics traversants, animations §4, données factices.
