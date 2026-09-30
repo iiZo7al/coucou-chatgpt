@@ -184,9 +184,14 @@ const MODELS: [string, string][] = [
 function apiSection(hasKey: boolean): HTMLElement {
   const accountFeedback = h("div", {});
   const signIn = h("button", { class: "primary", text: "Continue with ChatGPT" });
-  signIn.addEventListener("click", () => {
+  signIn.addEventListener("click", async () => {
     clear(accountFeedback);
-    accountFeedback.append(h("div", { class: "notice warn", text: "ChatGPT plan sign-in is being enabled for this open-source build. Until the OAuth runtime is bundled, use an API key or Local gpt-oss." }));
+    try {
+      await Bridge.chatgptLogin();
+      accountFeedback.append(h("div", { class: "notice ok", text: "Sign-in opened in your browser. Finish it there, then Coucou will use your ChatGPT plan through Codex." }));
+    } catch (err) {
+      accountFeedback.append(h("div", { class: "notice err", text: String(err).replace(/^Error:\\s*/, "") }));
+    }
   });
   const localOss = h("button", { text: "Set up Local gpt-oss" });
   localOss.addEventListener("click", () => void Bridge.openUrl("https://developers.openai.com/learn/gpt-oss"));
@@ -258,7 +263,7 @@ function apiSection(hasKey: boolean): HTMLElement {
     "section",
     {},
     h("h2", {}, dot, h("span", { text: "ChatGPT / OpenAI" })),
-    h("div", { class: "hint", text: "Choose ChatGPT plan sign-in, an API key, or run OpenAI gpt-oss locally." }),
+    h("div", { class: "hint", text: "Recommended: Continue with ChatGPT to use your eligible ChatGPT plan through Codex. API key is optional. You can also run OpenAI gpt-oss locally." }),
     h("div", { class: "row" }, signIn, localOss),
     accountFeedback,
     state,
