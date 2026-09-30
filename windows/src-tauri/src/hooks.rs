@@ -1,6 +1,6 @@
 // Codex hook installation.
 //
-// The rule from CLAUDE.md is strict and is followed to the letter:
+// The rule from AGENTS.md is strict and is followed to the letter:
 // read %USERPROFILE%\.codex\settings.json, take a dated backup, merge without
 // touching anybody else's hooks, show the diff, and write only after an explicit
 // click. Uninstall removes Coucou's entries and nothing else.
