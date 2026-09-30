@@ -1,8 +1,8 @@
 # Notch Buddy — intégrations
 
 Règle d'or : **vérifier la doc officielle au moment d'implémenter**. Les formats ci-dessous sont le plan, pas une garantie. Sources à relire :
-- Hooks Codex : https://code.claude.com/docs/en/hooks
-- API ChatGPT (Messages, outil de recherche web, modèles) : https://docs.claude.com/en/api/overview
+- Hooks Codex : https://developers.openai.com/docs/hooks
+- API ChatGPT (Messages, outil de recherche web, modèles) : https://developers.openai.com/api/docs/overview
 - API publique n8n : `{URL de l'instance}/api/v1/docs` (playground de l'instance de Louis)
 
 ---
