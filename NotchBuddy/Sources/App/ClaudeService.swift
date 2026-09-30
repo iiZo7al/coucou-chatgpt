@@ -244,78 +244,57 @@ final class OpenAIService {
         return data
     }
 
-    // MARK: - Chat result handler
+    // MARK: - OpenAI Responses result handlers
+
+    private func outputText(from data: Data) -> String? {
+        guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let output = json["output"] as? [[String: Any]] else { return nil }
+        var parts: [String] = []
+        for item in output where item["type"] as? String == "message" {
+            for block in item["content"] as? [[String: Any]] ?? [] {
+                if block["type"] as? String == "output_text", let text = block["text"] as? String {
+                    parts.append(text)
+                }
+            }
+        }
+        let text = parts.joined(separator: "\n").trimmingCharacters(in: .whitespacesAndNewlines)
+        return text.isEmpty ? nil : text
+    }
 
     private func handleChatResult(_ data: Data, state: AppState) async {
-        guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-              let content = json["content"] as? [[String: Any]] else {
-            await showError("Unexpected API response.", state: state)
+        guard let text = outputText(from: data) else {
+            await showError("Unexpected OpenAI response.", state: state)
             return
         }
-
-        // Store full content (includes tool_use/tool_result blocks) for correct multi-turn context
-        conversationMessages.append(["role": "assistant", "content": content])
-
-        guard let textBlock = content.first(where: { $0["type"] as? String == "text" }),
-              let text = textBlock["text"] as? String, !text.isEmpty else {
-            await showError("No response text.", state: state)
-            return
-        }
-
-        // Add to display history
-        state.chatHistory.append(ChatMessage(role: .assistant, content: text.trimmingCharacters(in: .whitespacesAndNewlines)))
-
+        conversationMessages.append(["role": "assistant", "content": [["type": "output_text", "text": text]]])
+        state.chatHistory.append(ChatMessage(role: .assistant, content: text))
         state.stateOverride = nil
         state.view = .prompt
         NotificationCenter.default.post(name: .triggerEmote, object: BotEmote.happy)
     }
 
-    // MARK: - Structured result handler
-
     private func handleResult(_ data: Data, state: AppState) async {
-        // Extract text from OpenAI response (may contain tool_use / web_search_tool_result blocks)
-        guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-              let content = json["content"] as? [[String: Any]],
-              let textBlock = content.first(where: { $0["type"] as? String == "text" }),
-              let text = textBlock["text"] as? String else {
-            await showError("Unexpected API response.", state: state)
+        guard let text = outputText(from: data) else {
+            await showError("Unexpected OpenAI response.", state: state)
             return
         }
-
-        // Strip markdown code fences if present, then extract JSON object
         let cleanText: String
         if let start = text.firstIndex(of: "{"), let end = text.lastIndex(of: "}") {
             cleanText = String(text[start...end])
         } else {
             cleanText = text
         }
-
-        // Try to parse as our JSON format
         if let resultData = cleanText.data(using: .utf8),
            let parsed = try? JSONSerialization.jsonObject(with: resultData) as? [String: Any] {
-            let title  = parsed["title"] as? String ?? "Result"
-            let note   = parsed["note"] as? String
-            var items: [ResultItem] = []
-            if let rawItems = parsed["items"] as? [[String: Any]] {
-                for item in rawItems.prefix(3) {
-                    items.append(ResultItem(
-                        label:  item["label"]  as? String ?? "",
-                        detail: item["detail"] as? String ?? "",
-                        url:    item["url"]    as? String
-                    ))
-                }
+            let title = parsed["title"] as? String ?? "Result"
+            let note = parsed["note"] as? String
+            let items = (parsed["items"] as? [[String: Any]] ?? []).prefix(3).map {
+                ResultItem(label: $0["label"] as? String ?? "", detail: $0["detail"] as? String ?? "", url: $0["url"] as? String)
             }
-            state.searchResult = SearchResult(title: title, items: items, note: note)
+            state.searchResult = SearchResult(title: title, items: Array(items), note: note)
         } else {
-            // Fallback: show raw text in 3-line chunks
-            let lines = cleanText.components(separatedBy: "\n").filter { !$0.isEmpty }.prefix(3)
-            state.searchResult = SearchResult(
-                title: "ChatGPT response",
-                items: lines.map { ResultItem(label: $0, detail: "", url: nil) },
-                note: nil
-            )
+            state.searchResult = SearchResult(title: "ChatGPT response", items: [ResultItem(label: cleanText, detail: "", url: nil)], note: nil)
         }
-
         state.stateOverride = nil
         state.view = .result
         NotificationCenter.default.post(name: .triggerEmote, object: BotEmote.proud)
