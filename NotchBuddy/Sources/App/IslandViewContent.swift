@@ -794,7 +794,7 @@ struct PromptView: View {
         state.chatHistory.append(ChatMessage(role: .user, content: query))
         state.stateOverride = .thinking
         Task {
-            await ChatGPTService.shared.chat(query: query, context: state.promptContext, state: state)
+            await OpenAIService.shared.chat(query: query, context: state.promptContext, state: state)
             await MainActor.run { focused = true }
         }
     }
@@ -2681,7 +2681,7 @@ struct SendButtonStyle: ButtonStyle {
 struct SettingsIslandView: View {
     @ObservedObject var state: AppState
 
-    private var claudeConnected: Bool {
+    private var codexConnected: Bool {
         let url = FileManager.default.homeDirectoryForCurrentUser
             .appendingPathComponent(".codex/config.toml")
         guard let data = try? Data(contentsOf: url),
@@ -2745,7 +2745,7 @@ struct SettingsIslandView: View {
 
                 // Connection status
                 HStack(spacing: 14) {
-                    StatusBadge(label: "Codex", ok: claudeConnected)
+                    StatusBadge(label: "Codex", ok: codexConnected)
                     StatusBadge(label: "API", ok: apiConnected)
                     Spacer()
                     Button("Settings…") {
