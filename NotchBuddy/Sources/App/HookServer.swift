@@ -471,10 +471,10 @@ final class HookServer: @unchecked Sendable {
 
     // MARK: - Outdated hook detection
 
-    /// Returns true if settings.json has a Coucou PermissionRequest hook with timeout < 120s.
+    /// Returns true if hooks.json has a Coucou PermissionRequest hook with timeout < 120s.
     static func hooksNeedUpdate() -> Bool {
         let settingsURL = FileManager.default.homeDirectoryForCurrentUser
-            .appendingPathComponent(".codex/settings.json")
+            .appendingPathComponent(".codex/hooks.json")
         guard let data = try? Data(contentsOf: settingsURL),
               let settings = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
               let hooks = settings["hooks"] as? [String: Any],
@@ -496,7 +496,7 @@ final class HookServer: @unchecked Sendable {
         return false
     }
 
-    // MARK: - Codex settings.json hook installer
+    // MARK: - Codex hooks.json installer
 
     private var _pendingHooksData: Data?
 
@@ -511,13 +511,13 @@ final class HookServer: @unchecked Sendable {
     func writeChatGPTHooks() throws {
         guard let data = _pendingHooksData else { return }
         let settingsURL = FileManager.default.homeDirectoryForCurrentUser
-            .appendingPathComponent(".codex/settings.json")
+            .appendingPathComponent(".codex/hooks.json")
         // Backup first
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyyMMdd-HHmm"
         let stamp = formatter.string(from: Date())
         let backupURL = settingsURL.deletingLastPathComponent()
-            .appendingPathComponent("settings.json.bak-\(stamp)")
+            .appendingPathComponent("hooks.json.bak-\(stamp)")
         try? FileManager.default.copyItem(at: settingsURL, to: backupURL)
         try? FileManager.default.createDirectory(at: settingsURL.deletingLastPathComponent(),
                                                   withIntermediateDirectories: true)
@@ -527,7 +527,7 @@ final class HookServer: @unchecked Sendable {
 
     private func buildHooksData() throws -> Data {
         let settingsURL = FileManager.default.homeDirectoryForCurrentUser
-            .appendingPathComponent(".codex/settings.json")
+            .appendingPathComponent(".codex/hooks.json")
         var settings: [String: Any] = [:]
         if let data = try? Data(contentsOf: settingsURL),
            let parsed = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
@@ -562,7 +562,7 @@ final class HookServer: @unchecked Sendable {
 
     func uninstallChatGPTHooks() throws {
         let settingsURL = FileManager.default.homeDirectoryForCurrentUser
-            .appendingPathComponent(".codex/settings.json")
+            .appendingPathComponent(".codex/hooks.json")
         guard let data = try? Data(contentsOf: settingsURL),
               var settings = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
               var hooks = settings["hooks"] as? [String: Any] else { return }
@@ -609,10 +609,10 @@ final class HookServer: @unchecked Sendable {
         _ = try? FileManager.default.setAttributes([.posixPermissions: 0o755 as NSNumber], ofItemAtPath: scriptURL.path)
 
         // Write settings.json (with backup)
-        let settingsURL = codexURL.appendingPathComponent("settings.json")
+        let settingsURL = codexURL.appendingPathComponent("hooks.json")
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyyMMdd-HHmm"
-        let backupURL = codexURL.appendingPathComponent("settings.json.bak-\(formatter.string(from: Date()))")
+        let backupURL = codexURL.appendingPathComponent("hooks.json.bak-\(formatter.string(from: Date()))")
         try? FileManager.default.copyItem(at: settingsURL, to: backupURL)
         try data.write(to: settingsURL, options: .atomic)
         _pendingHooksData = nil
@@ -621,7 +621,7 @@ final class HookServer: @unchecked Sendable {
     func uninstallChatGPTHooksAppStore(codexURL: URL) throws {
         let accessing = codexURL.startAccessingSecurityScopedResource()
         defer { if accessing { codexURL.stopAccessingSecurityScopedResource() } }
-        let settingsURL = codexURL.appendingPathComponent("settings.json")
+        let settingsURL = codexURL.appendingPathComponent("hooks.json")
         guard let data = try? Data(contentsOf: settingsURL),
               var settings = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
               var hooks = settings["hooks"] as? [String: Any] else { return }
@@ -643,7 +643,7 @@ final class HookServer: @unchecked Sendable {
     }
 
     private func buildHooksData(codexURL: URL) throws -> Data {
-        let settingsURL = codexURL.appendingPathComponent("settings.json")
+        let settingsURL = codexURL.appendingPathComponent("hooks.json")
         var settings: [String: Any] = [:]
         if let data = try? Data(contentsOf: settingsURL),
            let parsed = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
