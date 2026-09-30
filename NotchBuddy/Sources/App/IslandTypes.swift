@@ -28,7 +28,7 @@ enum BotEmote: String, CaseIterable {
     case love, surprised, proud, wink, yawn, happy, annoyed
 }
 
-// MARK: - Approval info (pending PermissionRequest from Claude Code)
+// MARK: - Approval info (pending PermissionRequest from Codex)
 
 struct ApprovalInfo: Sendable {
     var sessionId: String
@@ -54,11 +54,11 @@ struct AgentTask: Identifiable, Equatable {
     var emote: BotEmote? = nil
     var miniEye: EyeShape? = nil
     var pillBadge: PillBadge? = nil  // alert badge shown on pill when not focused
-    var sessionCwd: String?  = nil  // last known working directory (Claude Code sessions)
+    var sessionCwd: String?  = nil  // last known working directory (Codex sessions)
 }
 
 enum AgentSource: Equatable {
-    case claudeCode
+    case codex
     case n8n
 }
 
