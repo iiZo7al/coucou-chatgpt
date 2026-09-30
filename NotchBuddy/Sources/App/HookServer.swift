@@ -108,7 +108,7 @@ final class HookServer: @unchecked Sendable {
 
 
     // MARK: - Event → AppState
-    // All Codex events route to the permanent "integration_claude" task.
+    // All Codex events route to the permanent "integration_codex" task.
     // View switches only happen if VS Code is the currently focused mochi.
     // When not focused: state updates animate the mini bot in the pill; badge shown for alerts.
 
@@ -129,7 +129,7 @@ final class HookServer: @unchecked Sendable {
             return
         }
 
-        let focused = state.focusId == "integration_claude"
+        let focused = state.focusId == "integration_codex"
 
         switch name {
 
@@ -143,75 +143,75 @@ final class HookServer: @unchecked Sendable {
         case "UserPromptSubmit":
             activeSessionId = sessionId
             upsertTask(projectName: projectName, cwd: cwd)
-            state.updateTask(id: "integration_claude", state: .thinking)
+            state.updateTask(id: "integration_codex", state: .thinking)
             if let prompt = payload["prompt"] as? String, !prompt.isEmpty {
-                appendStep(id: "integration_claude", step: String(prompt.prefix(60)))
+                appendStep(id: "integration_codex", step: String(prompt.prefix(60)))
             }
             if state.isPresent { expandIfNeeded(to: .overview) }
 
         case "PreToolUse":
             activeSessionId = sessionId
             upsertTask(projectName: projectName, cwd: cwd)
-            state.updateTask(id: "integration_claude", state: .working)
+            state.updateTask(id: "integration_codex", state: .working)
             let tool = payload["tool_name"] as? String ?? "Tool"
             let input = payload["tool_input"] as? [String: Any] ?? [:]
             let step = frenchStep(tool: tool, input: input)
-            appendStep(id: "integration_claude", step: step)
+            appendStep(id: "integration_codex", step: step)
             nbLog("PreToolUse \(step)")
 
         case "PostToolUse":
-            state.updateTask(id: "integration_claude", state: .working)
+            state.updateTask(id: "integration_codex", state: .working)
 
         case "PostToolUseFailure":
-            state.updateTask(id: "integration_claude", state: .working)
-            appendStep(id: "integration_claude", step: "⚠ failed")
+            state.updateTask(id: "integration_codex", state: .working)
+            appendStep(id: "integration_codex", step: "⚠ failed")
 
         case "Notification":
             let message = payload["message"] as? String ?? ""
             let lower = message.lowercased()
             if lower.contains("rate limit") || lower.contains("limite d") {
-                state.updateTask(id: "integration_claude", state: .ratelimit)
+                state.updateTask(id: "integration_codex", state: .ratelimit)
                 SoundEngine.shared.play("rate")
             } else if message.hasSuffix("?") {
-                state.updateTask(id: "integration_claude", state: .question)
-                appendStep(id: "integration_claude", step: message)
+                state.updateTask(id: "integration_codex", state: .question)
+                appendStep(id: "integration_codex", step: message)
             }
 
         case "Stop":
-            state.updateTask(id: "integration_claude", state: .finished)
+            state.updateTask(id: "integration_codex", state: .finished)
             if let message = payload["message"] as? String, !message.isEmpty {
-                appendStep(id: "integration_claude", step: String(message.prefix(60)))
+                appendStep(id: "integration_codex", step: String(message.prefix(60)))
             }
             SoundEngine.shared.play("finish")
             if focused {
                 expandIfNeeded(to: .finished)
             } else {
-                setPillBadge(id: "integration_claude", badge: .finished)
+                setPillBadge(id: "integration_codex", badge: .finished)
             }
             DispatchQueue.main.asyncAfter(deadline: .now() + 5.2) {
-                state.updateTask(id: "integration_claude", state: .idle)
-                self.clearPillBadge(id: "integration_claude")
+                state.updateTask(id: "integration_codex", state: .idle)
+                self.clearPillBadge(id: "integration_codex")
             }
 
         case "StopFailure":
-            state.updateTask(id: "integration_claude", state: .error)
+            state.updateTask(id: "integration_codex", state: .error)
             SoundEngine.shared.play("error")
             if focused {
                 expandIfNeeded(to: .error)
             } else {
-                setPillBadge(id: "integration_claude", badge: .error)
+                setPillBadge(id: "integration_codex", badge: .error)
             }
 
         case "SessionEnd":
             activeSessionId = nil
-            state.updateTask(id: "integration_claude", state: .idle)
+            state.updateTask(id: "integration_codex", state: .idle)
             clearSession()
 
         case "SubagentStart":
-            appendStep(id: "integration_claude", step: "+ subagent")
+            appendStep(id: "integration_codex", step: "+ subagent")
 
         case "SubagentStop":
-            appendStep(id: "integration_claude", step: "• subagent done")
+            appendStep(id: "integration_codex", step: "• subagent done")
 
         default:
             break
@@ -282,16 +282,16 @@ final class HookServer: @unchecked Sendable {
         activeSessionId = sessionId
 
         upsertTask(projectName: projectName, cwd: cwd)
-        state.updateTask(id: "integration_claude", state: .approval)
+        state.updateTask(id: "integration_codex", state: .approval)
         state.pendingApproval = ApprovalInfo(sessionId: sessionId, tool: tool, command: command)
         state.isPinned = true
         SoundEngine.shared.play("approval")
 
-        let focused = state.focusId == "integration_claude"
+        let focused = state.focusId == "integration_codex"
         if focused {
             expandIfNeeded(to: .approval)
         } else {
-            setPillBadge(id: "integration_claude", badge: .approval)
+            setPillBadge(id: "integration_codex", badge: .approval)
         }
 
         let captured = fd
@@ -326,16 +326,16 @@ final class HookServer: @unchecked Sendable {
         let state = AppState.shared
         state.pendingApproval = nil
         state.isPinned = false
-        state.updateTask(id: "integration_claude", state: .working)
-        clearPillBadge(id: "integration_claude")
+        state.updateTask(id: "integration_codex", state: .working)
+        clearPillBadge(id: "integration_codex")
         state.view = state.tasks.isEmpty ? .empty : .overview
     }
 
-    /// Updates integration_claude with the current session project name and cwd.
+    /// Updates integration_codex with the current session project name and cwd.
     @MainActor
     private func upsertTask(projectName: String, cwd: String = "") {
         let state = AppState.shared
-        guard let idx = state.tasks.firstIndex(where: { $0.id == "integration_claude" }) else { return }
+        guard let idx = state.tasks.firstIndex(where: { $0.id == "integration_codex" }) else { return }
         state.tasks[idx].name = projectName
         if !cwd.isEmpty { state.tasks[idx].sessionCwd = cwd }
     }
@@ -356,11 +356,11 @@ final class HookServer: @unchecked Sendable {
         state.tasks[idx].pillBadge = nil
     }
 
-    /// Resets integration_claude to idle, clears steps and project name.
+    /// Resets integration_codex to idle, clears steps and project name.
     @MainActor
     private func clearSession() {
         let state = AppState.shared
-        guard let idx = state.tasks.firstIndex(where: { $0.id == "integration_claude" }) else { return }
+        guard let idx = state.tasks.firstIndex(where: { $0.id == "integration_codex" }) else { return }
         state.tasks[idx].steps = []
         state.tasks[idx].stepIndex = 0
         state.tasks[idx].name = "VS Code"
