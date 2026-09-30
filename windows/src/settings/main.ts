@@ -71,7 +71,7 @@ function codexSection(status: HookStatus): HTMLElement {
           : "Install the hooks to see your Codex sessions in the island and approve permissions without leaving what you are doing.",
       }),
       h("div", { class: "row" },
-        h("label", { text: "settings.json" }),
+        h("label", { text: "hooks.json" }),
         h("span", { class: "path", text: status.settingsPath }),
       ),
       h("div", { class: "row" },
