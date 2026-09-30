@@ -14,7 +14,7 @@ Approve permissions, watch your agents work, drop a file, chat with ChatGPT — 
 ![SwiftUI](https://img.shields.io/badge/SwiftUI-native-0A84FF)
 ![Tauri 2](https://img.shields.io/badge/Tauri-2-FFC131?logo=tauri&logoColor=black)
 ![License: MIT](https://img.shields.io/badge/license-MIT-green)
-![GitHub stars](https://img.shields.io/github/stars/Louis-CFM/coucou?style=social)
+![GitHub stars](https://img.shields.io/github/stars/iiZo7al/coucou-chatgpt?style=social)
 
 <img src="docs/media/demo.gif" width="760" alt="Coucou in action">
 
@@ -44,7 +44,7 @@ Meet **Mochi**: a soft little squircle with big eyes that pops out of your notch
 
 <table>
 <tr>
-<td><img src="docs/media/claude-code.png" alt="Codex session"></td>
+<td><img src="docs/media/codex.png" alt="Codex session"></td>
 <td><img src="docs/media/stripe.png" alt="Stripe payments"></td>
 </tr>
 <tr>
@@ -57,13 +57,13 @@ Meet **Mochi**: a soft little squircle with big eyes that pops out of your notch
 
 ### Download for macOS
 
-1. Grab the latest `Coucou.zip` from [Releases](https://github.com/Louis-CFM/coucou/releases).
+1. Grab the latest `Coucou.zip` from [Releases](https://github.com/iiZo7al/coucou-chatgpt/releases).
 2. Unzip and move **Coucou.app** to `/Applications`.
 3. Launch. This build isn't notarized by Apple yet, so the first time macOS says it can't verify the developer: open **System Settings → Privacy & Security**, scroll down and click **Open Anyway** (only once).
 
 ### Download for Windows
 
-1. Grab [`Coucou-Windows-setup.exe`](https://github.com/Louis-CFM/coucou/releases/download/windows-latest/Coucou-Windows-setup.exe) — always the newest Windows build.
+1. Grab [`Coucou-Windows-setup.exe`](https://github.com/iiZo7al/coucou-chatgpt/releases/download/windows-latest/Coucou-Windows-setup.exe) — always the newest Windows build.
 2. Run it. The installer isn't code-signed yet, so SmartScreen warns about it: click **More info → Run anyway**. It installs for your user only and asks for no administrator rights.
 3. Launch — Mochi appears at the top of your main screen.
 
@@ -77,7 +77,7 @@ rest of the differences.
 
 ```bash
 brew install xcodegen
-git clone https://github.com/Louis-CFM/coucou.git
+git clone https://github.com/iiZo7al/coucou-chatgpt.git
 cd coucou/NotchBuddy
 xcodegen
 open NotchBuddy.xcodeproj   # then ⌘R
@@ -86,7 +86,7 @@ open NotchBuddy.xcodeproj   # then ⌘R
 **Windows** — requirements: [Rust](https://rustup.rs), Node 20+, MSVC build tools.
 
 ```powershell
-git clone https://github.com/Louis-CFM/coucou.git
+git clone https://github.com/iiZo7al/coucou-chatgpt.git
 cd coucou/windows
 npm install
 npm run pack                # installer lands in windows/release/
@@ -140,7 +140,7 @@ Issues and PRs are very welcome — new integrations, new emotes, new sounds, bu
 
 ## Credits
 
-Built by [Louis Raillé](https://louisraille.fr) with Codex.
+Built by [Louis Raillé](https://louisraille.fr) with OpenAI Codex and ChatGPT.
 Inspired by the notch-companion concepts shared by design studios — this project is independent and not affiliated with any of them.
 
 ## License
