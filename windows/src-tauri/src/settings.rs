@@ -23,7 +23,7 @@ pub struct Settings {
 }
 
 fn default_model() -> String {
-    crate::claude::DEFAULT_MODEL.to_string()
+    crate::openai::DEFAULT_MODEL.to_string()
 }
 
 impl Default for Settings {
