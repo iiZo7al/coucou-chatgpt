@@ -261,11 +261,11 @@ async fn chat_send(
 
     if codex_chat::login_status().is_ok() {
         codex_chat::send(&model, query, context).await
-    } else if secrets::present("openai-api-key") {
-        // Compatibility fallback for existing Coucou installs.
-        openai::send(&chat, &model, query, context).await
     } else {
-        Err("OpenBot is ready, but Codex is not signed in. Open OpenBot → Providers → Codex and sign in, then try again.".into())
+        // Never silently fall back to the paid OpenAI API. OpenBot may be using
+        // OpenCode/Gemini/Grok while Codex itself is not signed in, and charging
+        // an old API key here is surprising (and caused the 429 credit error).
+        Err("Coucou will not use your OpenAI API key. In OpenBot, connect Codex / ChatGPT first, then try again. Direct OpenBot-agent chat needs OpenBot's authenticated Team API and is not exposed as a public localhost endpoint.".into())
     }
 }
 
