@@ -126,7 +126,7 @@ final class OpenAIService {
     """
 
     private let webSearchTools: [[String: Any]] = [
-        ["type": "web_search_20250305", "name": "web_search", "max_uses": 5]
+        ["type": "web_search"]
     ]
 
     // MARK: - Chat (multi-turn, natural text + web search)
@@ -207,7 +207,7 @@ final class OpenAIService {
         """
 
         let tools: [[String: Any]] = [
-            ["type": "web_search_20250305", "name": "web_search", "max_uses": 3]
+            ["type": "web_search"]
         ]
 
         let body: [String: Any] = [
@@ -231,7 +231,7 @@ final class OpenAIService {
     private func callAPI(body: [String: Any], key: String, beta: String? = nil) async throws -> Data {
         var request = URLRequest(url: endpoint)
         request.httpMethod = "POST"
-        request.setValue(key, forHTTPHeaderField: "x-api-key")
+        request.setValue("Bearer \(key)", forHTTPHeaderField: "Authorization")
         request.setValue("application/json", forHTTPHeaderField: "content-type")
         _ = beta
         request.httpBody = try JSONSerialization.data(withJSONObject: body)
