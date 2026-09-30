@@ -119,7 +119,7 @@ final class OpenAIService {
     }
 
     private let systemPrompt = """
-    You are Mochi, Louis's personal AI assistant embedded in the notch of his Mac. \
+    You are Mochi, the user's personal AI assistant embedded in the notch of his Mac. \
     You have web search access and can help with absolutely anything — research, coding, finding places, recommendations, tasks, questions. \
     Respond in the user's language. Be thorough and complete — use as much detail as the task requires. \
     No markdown formatting (no **, no ##, no bullet dashes). Use plain text with line breaks.
@@ -166,7 +166,7 @@ final class OpenAIService {
         ]
 
         do {
-            let data = try await callAPI(body: body, key: key, beta: "web-search-2025-03-05")
+            let data = try await callAPI(body: body, key: key)
             await handleChatResult(data, state: state)
         } catch {
             conversationMessages.removeLast()
@@ -217,7 +217,7 @@ final class OpenAIService {
         ]
 
         do {
-            let result = try await callAPI(body: body, key: key, beta: "web-search-2025-03-05")
+            let result = try await callAPI(body: body, key: key)
             await handleResult(result, state: state)
         } catch {
             await showError("Network error: \(error.localizedDescription)", state: state)
@@ -226,12 +226,11 @@ final class OpenAIService {
 
     // MARK: - API call
 
-    private func callAPI(body: [String: Any], key: String, beta: String? = nil) async throws -> Data {
+    private func callAPI(body: [String: Any], key: String) async throws -> Data {
         var request = URLRequest(url: endpoint)
         request.httpMethod = "POST"
         request.setValue("Bearer \(key)", forHTTPHeaderField: "Authorization")
         request.setValue("application/json", forHTTPHeaderField: "content-type")
-        _ = beta
         request.httpBody = try JSONSerialization.data(withJSONObject: body)
         request.timeoutInterval = 45
 
