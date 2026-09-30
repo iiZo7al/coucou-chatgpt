@@ -83,6 +83,9 @@ export const Bridge = {
   chatSend: (query: string, context: ChatContext | null) =>
     callOrThrow<{ text: string }>("chat_send", { query, context }),
   chatReset: () => call<void>("chat_reset"),
+  chatgptStatus: () => callOrThrow<string>("chatgpt_status"),
+  chatgptLogin: () => callOrThrow<void>("chatgpt_login"),
+  codexInstalled: () => call<boolean>("codex_installed"),
   /** Copies a dropped file into the inbox. */
   ingestFile: (path: string) => callOrThrow<DroppedFile>("ingest_file", { path }),
   /** Only ever tells you whether a key exists — never its value. */
