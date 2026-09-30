@@ -6,7 +6,7 @@
 
 **Mochi doesn't get a notch on a PC — so it lives at the top of your screen instead.**
 
-Approve Claude Code permissions, watch your session work, drop a file, chat with Claude, keep an eye on your services — without leaving what you're doing.
+Approve Codex permissions, watch your session work, drop a file, chat with ChatGPT, keep an eye on your services — without leaving what you're doing.
 
 ![Windows 10/11](https://img.shields.io/badge/Windows-10%2F11-0078D4?logo=windows)
 ![Tauri 2](https://img.shields.io/badge/Tauri-2-FFC131?logo=tauri&logoColor=black)
@@ -40,8 +40,8 @@ then this is what an unsigned installer looks like on Windows, and you can alway
 
 <img src="screenshots/compact.png" width="292" alt="The compact island, with the integration pills as mini Mochis">
 <img src="screenshots/overview.png" width="640" alt="The overview: the focused integration on the left, the other pills on the right">
-<img src="screenshots/approval.png" width="640" alt="A Claude Code permission request, with Deny and Allow">
-<img src="screenshots/chat.png" width="640" alt="Chatting with Claude from the island">
+<img src="screenshots/approval.png" width="640" alt="A Codex permission request, with Deny and Allow">
+<img src="screenshots/chat.png" width="640" alt="Chatting with ChatGPT from the island">
 <img src="screenshots/drop.png" width="640" alt="Mochi turned into a box, waiting for a file">
 
 | What you do | What happens |
@@ -54,30 +54,30 @@ then this is what an unsigned installer looks like on Windows, and you can alway
 | `Esc` | Closes the island |
 | Tray icon | Open, Settings…, Pause, Quit |
 
-Everything else happens on its own: a Claude Code permission request opens the
+Everything else happens on its own: a Codex permission request opens the
 island with **Deny / Allow**, a finished session shows what it did, and
 your integrations sit in the coloured pills next to Mochi.
 
-## Claude Code
+## Codex
 
 <img src="screenshots/settings.png" width="562" alt="The settings window">
 
-Open **Settings… → Claude Code → Install hooks…**. You get the exact diff of what
-will change in `%USERPROFILE%\.claude\settings.json`, the path of the dated backup
+Open **Settings… → Codex → Install hooks…**. You get the exact diff of what
+will change in `%USERPROFILE%\.codex\settings.json`, the path of the dated backup
 that will be taken, and nothing is written until you click. Your own hooks are
 never touched, and uninstalling removes only Coucou's entries.
 
 The relay is a tiny executable, `coucou-hook.exe`, copied to
 `%LOCALAPPDATA%\Coucou\bin\` at launch. It is given 300 ms to reach Coucou and
-exits cleanly if the app is closed, slow or crashed — **a Claude Code session is
+exits cleanly if the app is closed, slow or crashed — **a Codex session is
 never blocked or slowed down by Coucou.** If nobody answers a permission request
-in time, Coucou stays quiet and Claude Code asks in the terminal as usual.
+in time, Coucou stays quiet and Codex asks in the terminal as usual.
 
 It works from any terminal — Windows Terminal, PowerShell, VS Code, Git Bash.
 
 ## Chat and keys
 
-**Settings… → Claude** takes your Anthropic API key. Keys live in the **Windows
+**Settings… → ChatGPT** takes your OpenAI API key. Keys live in the **Windows
 Credential Manager**, never on disk and never in the interface — the island can
 only ask whether a key exists. Same for every integration key.
 
@@ -133,8 +133,8 @@ windows/
     island/            state machine, hooks, integrations
     views/             every island view
     settings/          the settings window
-  src-tauri/           Rust backend: window, named pipe, Claude API, pollers
-  hook/                coucou-hook.exe, the Claude Code relay
+  src-tauri/           Rust backend: window, named pipe, ChatGPT API, pollers
+  hook/                coucou-hook.exe, the Codex relay
   scripts/             icon generator
 ```
 
