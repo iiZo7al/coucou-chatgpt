@@ -162,21 +162,6 @@ final class HookServer: @unchecked Sendable {
         case "PostToolUse":
             state.updateTask(id: "integration_codex", state: .working)
 
-        case "PostToolUseFailure":
-            state.updateTask(id: "integration_codex", state: .working)
-            appendStep(id: "integration_codex", step: "⚠ failed")
-
-        case "Notification":
-            let message = payload["message"] as? String ?? ""
-            let lower = message.lowercased()
-            if lower.contains("rate limit") || lower.contains("limite d") {
-                state.updateTask(id: "integration_codex", state: .ratelimit)
-                SoundEngine.shared.play("rate")
-            } else if message.hasSuffix("?") {
-                state.updateTask(id: "integration_codex", state: .question)
-                appendStep(id: "integration_codex", step: message)
-            }
-
         case "Stop":
             state.updateTask(id: "integration_codex", state: .finished)
             if let message = payload["message"] as? String, !message.isEmpty {
@@ -191,15 +176,6 @@ final class HookServer: @unchecked Sendable {
             DispatchQueue.main.asyncAfter(deadline: .now() + 5.2) {
                 state.updateTask(id: "integration_codex", state: .idle)
                 self.clearPillBadge(id: "integration_codex")
-            }
-
-        case "StopFailure":
-            state.updateTask(id: "integration_codex", state: .error)
-            SoundEngine.shared.play("error")
-            if focused {
-                expandIfNeeded(to: .error)
-            } else {
-                setPillBadge(id: "integration_codex", badge: .error)
             }
 
         case "SessionEnd":
@@ -543,10 +519,9 @@ final class HookServer: @unchecked Sendable {
         let events: [(String, Int)] = [
             ("SessionStart", 10), ("SessionEnd", 10),
             ("UserPromptSubmit", 10),
-            ("PreToolUse", 10), ("PostToolUse", 10), ("PostToolUseFailure", 10),
+            ("PreToolUse", 10), ("PostToolUse", 10),
             ("PermissionRequest", 120),
-            ("Notification", 10),
-            ("Stop", 10), ("StopFailure", 10),
+            ("Stop", 10),
             ("SubagentStart", 10), ("SubagentStop", 10),
         ]
         var hooks = settings["hooks"] as? [String: Any] ?? [:]
@@ -608,7 +583,7 @@ final class HookServer: @unchecked Sendable {
         try nbHookScriptAppStore.write(to: scriptURL, atomically: true, encoding: .utf8)
         _ = try? FileManager.default.setAttributes([.posixPermissions: 0o755 as NSNumber], ofItemAtPath: scriptURL.path)
 
-        // Write settings.json (with backup)
+        // Write hooks.json (with backup)
         let settingsURL = codexURL.appendingPathComponent("hooks.json")
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyyMMdd-HHmm"
@@ -654,10 +629,9 @@ final class HookServer: @unchecked Sendable {
         let events: [(String, Int)] = [
             ("SessionStart", 10), ("SessionEnd", 10),
             ("UserPromptSubmit", 10),
-            ("PreToolUse", 10), ("PostToolUse", 10), ("PostToolUseFailure", 10),
+            ("PreToolUse", 10), ("PostToolUse", 10),
             ("PermissionRequest", 120),
-            ("Notification", 10),
-            ("Stop", 10), ("StopFailure", 10),
+            ("Stop", 10),
             ("SubagentStart", 10), ("SubagentStop", 10),
         ]
         var hooks = settings["hooks"] as? [String: Any] ?? [:]
