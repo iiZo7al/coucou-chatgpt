@@ -437,7 +437,7 @@ struct SettingsView: View {
         do {
             try HookServer.shared.writeChatGPTHooksAppStore(codexURL: codexURL)
             showDiff = false
-            statusMessage = "✓ Hooks installed in ~/.codex/settings.json"
+            statusMessage = "✓ Hooks installed in ~/.codex/hooks.json"
             pendingHookJSON = ""
             hookNeedsUpdate = false
         } catch {
@@ -474,7 +474,7 @@ struct SettingsView: View {
         do {
             try HookServer.shared.writeChatGPTHooks()
             showDiff = false
-            statusMessage = "✓ Hooks installed in ~/.codex/settings.json"
+            statusMessage = "✓ Hooks installed in ~/.codex/hooks.json"
             pendingHookJSON = ""
             hookNeedsUpdate = false
         } catch {
