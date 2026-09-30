@@ -171,7 +171,7 @@ function codexSection(status: HookStatus): HTMLElement {
   return section;
 }
 
-// ── OpenAI API section ────────────────────────────────────────────────────────
+// ── ChatGPT / OpenAI section ──────────────────────────────────────────────────
 
 const MODELS: [string, string][] = [
   ["gpt-5.6-sol", "GPT-5.6 Sol"],
@@ -182,6 +182,15 @@ const MODELS: [string, string][] = [
 ];
 
 function apiSection(hasKey: boolean): HTMLElement {
+  const accountFeedback = h("div", {});
+  const signIn = h("button", { class: "primary", text: "Continue with ChatGPT" });
+  signIn.addEventListener("click", () => {
+    clear(accountFeedback);
+    accountFeedback.append(h("div", { class: "notice warn", text: "ChatGPT plan sign-in is being enabled for this open-source build. Until the OAuth runtime is bundled, use an API key or Local gpt-oss." }));
+  });
+  const localOss = h("button", { text: "Set up Local gpt-oss" });
+  localOss.addEventListener("click", () => void Bridge.openUrl("https://developers.openai.com/learn/gpt-oss"));
+
   const dot = statusDot(hasKey);
   const state = h("span", { class: "hint", text: hasKey ? "Key saved in the Windows Credential Manager." : "No key yet — the chat needs one." });
 
@@ -248,7 +257,10 @@ function apiSection(hasKey: boolean): HTMLElement {
   return h(
     "section",
     {},
-    h("h2", {}, dot, h("span", { text: "ChatGPT" })),
+    h("h2", {}, dot, h("span", { text: "ChatGPT / OpenAI" })),
+    h("div", { class: "hint", text: "Choose ChatGPT plan sign-in, an API key, or run OpenAI gpt-oss locally." }),
+    h("div", { class: "row" }, signIn, localOss),
+    accountFeedback,
     state,
     h("div", { class: "row" }, h("label", { text: "API key" }), field, saveBtn, clearBtn),
     h("div", { class: "row" }, h("label", { text: "Model" }), model),
