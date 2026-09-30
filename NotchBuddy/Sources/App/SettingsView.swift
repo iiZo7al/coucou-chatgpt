@@ -95,7 +95,7 @@ struct SettingsView: View {
                             Text("Choose your ~/.codex folder so Coucou can add its hooks.")
                                 .font(.system(size: 12))
                                 .foregroundColor(.secondary)
-                            Button("Choose .claude folder…") { chooseChatGPTFolder() }
+                            Button("Choose .codex folder…") { chooseCodexFolder() }
                                 .buttonStyle(.borderedProminent)
                         }
                         #else
@@ -371,9 +371,9 @@ struct SettingsView: View {
     // MARK: - App Store: hooks via NSOpenPanel + security-scoped bookmark
 
     #if APPSTORE
-    private func chooseChatGPTFolder() {
+    private func chooseCodexFolder() {
         let panel = NSOpenPanel()
-        panel.message = "Choose your .claude folder so Coucou can add its hooks"
+        panel.message = "Choose your .codex folder so Coucou can add its hooks"
         panel.prompt = "Choose"
         panel.canChooseFiles = false
         panel.canChooseDirectories = true
@@ -388,14 +388,14 @@ struct SettingsView: View {
                 )
                 UserDefaults.standard.set(data, forKey: "codexDirectoryBookmark")
                 codexAccessGranted = true
-                statusMessage = "✓ .claude folder access granted."
+                statusMessage = "✓ .codex folder access granted."
             } catch {
                 statusMessage = "❌ Bookmark error: \(error.localizedDescription)"
             }
         }
     }
 
-    private func resolveChatGPTBookmark() -> URL? {
+    private func resolveCodexBookmark() -> URL? {
         guard let data = UserDefaults.standard.data(forKey: "codexDirectoryBookmark") else { return nil }
         var isStale = false
         guard let url = try? URL(resolvingBookmarkData: data,
@@ -412,9 +412,9 @@ struct SettingsView: View {
     }
 
     private func installHooksAppStore() {
-        guard let codexURL = resolveChatGPTBookmark() else {
+        guard let codexURL = resolveCodexBookmark() else {
             codexAccessGranted = false
-            statusMessage = "❌ .claude folder access lost — choose the folder again."
+            statusMessage = "❌ .codex folder access lost — choose the folder again."
             return
         }
         do {
@@ -429,9 +429,9 @@ struct SettingsView: View {
     }
 
     private func confirmInstallAppStore() {
-        guard let codexURL = resolveChatGPTBookmark() else {
+        guard let codexURL = resolveCodexBookmark() else {
             codexAccessGranted = false
-            statusMessage = "❌ .claude folder access lost."
+            statusMessage = "❌ .codex folder access lost."
             return
         }
         do {
@@ -446,9 +446,9 @@ struct SettingsView: View {
     }
 
     private func uninstallHooksAppStore() {
-        guard let codexURL = resolveChatGPTBookmark() else {
+        guard let codexURL = resolveCodexBookmark() else {
             codexAccessGranted = false
-            statusMessage = "❌ .claude folder access lost."
+            statusMessage = "❌ .codex folder access lost."
             return
         }
         do {
