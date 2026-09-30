@@ -1,6 +1,7 @@
 // Coucou for Windows — app wiring and the commands the island calls.
 
 mod openai;
+mod codex_chat;
 mod files;
 mod hooks;
 mod integrations;
@@ -240,7 +241,7 @@ fn approval_decline(app: AppHandle, request_id: String) {
 
 // ── Chat, files and secrets ───────────────────────────────────────────────────
 
-/// One chat turn. The API key and any file bytes stay on the Rust side.
+/// One chat turn. Prefer the user's ChatGPT/Codex plan login; fall back to an API key.
 #[tauri::command]
 async fn chat_send(
     shared: State<'_, Shared>,
@@ -249,8 +250,21 @@ async fn chat_send(
     context: Option<ChatContext>,
 ) -> Result<ChatReply, String> {
     let model = shared.settings.lock().unwrap().model.clone();
-    openai::send(&chat, &model, query, context).await
+    if codex_chat::login_status().is_ok() {
+        codex_chat::send(&model, query, context).await
+    } else {
+        openai::send(&chat, &model, query, context).await
+    }
 }
+
+#[tauri::command]
+fn chatgpt_status() -> Result<String, String> { codex_chat::login_status() }
+
+#[tauri::command]
+fn chatgpt_login() -> Result<(), String> { codex_chat::start_login() }
+
+#[tauri::command]
+fn codex_installed() -> bool { codex_chat::installed() }
 
 #[tauri::command]
 fn chat_reset(chat: State<Chat>) {
@@ -399,6 +413,9 @@ pub fn run() {
             log_line,
             chat_send,
             chat_reset,
+            chatgpt_status,
+            chatgpt_login,
+            codex_installed,
             ingest_file,
             secret_present,
             secret_set,
