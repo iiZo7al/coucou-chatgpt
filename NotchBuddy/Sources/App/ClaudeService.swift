@@ -312,22 +312,15 @@ final class OpenAIService {
         guard let data = try? Data(contentsOf: url) else { return nil }
         let ext = url.pathExtension.lowercased()
         let base64 = data.base64EncodedString()
-
         if ext == "pdf" {
-            return ["type": "document", "source": ["type": "base64", "media_type": "application/pdf", "data": base64]]
-        } else if ["jpg", "jpeg"].contains(ext) {
-            return ["type": "image", "source": ["type": "base64", "media_type": "image/jpeg", "data": base64]]
-        } else if ext == "png" {
-            return ["type": "image", "source": ["type": "base64", "media_type": "image/png", "data": base64]]
-        } else if ext == "gif" {
-            return ["type": "image", "source": ["type": "base64", "media_type": "image/gif", "data": base64]]
-        } else if ext == "webp" {
-            return ["type": "image", "source": ["type": "base64", "media_type": "image/webp", "data": base64]]
-        } else {
-            // Text/code — inline as text if <= 200 KB
-            guard data.count <= 200_000,
-                  let text = String(data: data, encoding: .utf8) else { return nil }
-            return ["type": "input_text", "text": "File contents:\n\(text)"]
+            return ["type": "input_file", "filename": url.lastPathComponent, "file_data": "data:application/pdf;base64,\(base64)"]
         }
+        let media: [String: String] = ["jpg":"image/jpeg","jpeg":"image/jpeg","png":"image/png","gif":"image/gif","webp":"image/webp"]
+        if let mediaType = media[ext] {
+            return ["type": "input_image", "image_url": "data:\(mediaType);base64,\(base64)"]
+        }
+        guard data.count <= 200_000, let text = String(data: data, encoding: .utf8) else { return nil }
+        return ["type": "input_text", "text": "File contents:\n\(text)"]
     }
+
 }
