@@ -34,7 +34,8 @@ Meet **Mochi**: a soft little squircle with big eyes that pops out of your notch
 - 🤖 **Codex, live** — see every session in your notch: what it reads, edits and runs, step by step. Finished? Mochi does a happy little jump.
 - ✅ **Approve from the notch** — Codex permission requests show up with **Allow / Deny**. One click, back to work.
 - 🧑‍💻 **Jump to the right terminal** — open the exact terminal window of a session *(macOS)*.
-- 💬 **Ask ChatGPT anything** — built-in chat, straight from the notch.
+- 💬 **Ask ChatGPT anything** — built-in chat, straight from the notch. Sign in with ChatGPT through Codex to use an eligible ChatGPT plan without an API key; API-key mode remains optional.
+- 🧠 **Local OpenAI gpt-oss** — prefer local/open-weight AI? Coucou links to the official gpt-oss setup so you can run gpt-oss-20b or gpt-oss-120b on your own hardware.
 - 📎 **Drop a file on the notch** — Mochi turns into a box and swallows it, then ask a question about it or send it by email *(email: macOS, Mail.app)*.
 - 🪟 **Drag Mochi onto any window** — attach that window as context for ChatGPT *(macOS)*.
 - 🔌 **Integrations** — Stripe payments, n8n workflows, GitHub, Vercel deployments, Resend emails, Notion, Cal.com. Each one gets its own little colored Mochi.
@@ -99,7 +100,9 @@ Click the Coucou icon in the menu bar (macOS) or in the system tray (Windows) �
 | What | Why | Where the key goes |
 |---|---|---|
 | **Codex hooks** | live sessions and approvals | **Install hooks** — Coucou backs up `~/.codex/hooks.json`, merges its hooks and shows you the diff before writing anything |
-| **OpenAI API key** | chat and questions about files | Keychain / Windows Credential Manager |
+| **ChatGPT account** | chat and questions about files | Recommended: Continue with ChatGPT through Codex; no API key for eligible plan usage |
+| **OpenAI API key** | optional API-billed fallback | Keychain / Windows Credential Manager |
+| **OpenAI gpt-oss** | local/open-weight model option | Run locally on your hardware; see the official gpt-oss setup |
 | Stripe, n8n, GitHub, Vercel, Resend, Notion, Cal.com | the integration pills | Keychain / Windows Credential Manager, all optional |
 
 If Coucou isn't running, the hook exits immediately: **Codex is never blocked.**
