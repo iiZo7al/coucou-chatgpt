@@ -171,106 +171,77 @@ function codexSection(status: HookStatus): HTMLElement {
   return section;
 }
 
-// ── ChatGPT / OpenAI section ──────────────────────────────────────────────────
+// ── OpenBot section ──────────────────────────────────────────────────────────
 
-const MODELS: [string, string][] = [
-  ["gpt-5.6-sol", "GPT-5.6 Sol"],
-  ["gpt-5.6", "GPT-5.6"],
-  ["gpt-5.6-terra", "GPT-5.6 Terra"],
-  ["gpt-5.6-luna", "GPT-5.6 Luna"],
-  ["gpt-5-mini", "GPT-5 Mini"],
-];
+function openBotSection(initial: { installed: boolean; running: boolean; path: string | null }, hasKey: boolean): HTMLElement {
+  const body = h("div", { style: "display:flex;flex-direction:column;gap:12px" });
+  const section = h("section", {}, h("h2", {}, statusDot(initial.installed), h("span", { text: "OpenBot" })), body);
 
-function apiSection(hasKey: boolean): HTMLElement {
-  const accountFeedback = h("div", {});
-  const signIn = h("button", { class: "primary", text: "Continue with ChatGPT" });
-  signIn.addEventListener("click", async () => {
-    clear(accountFeedback);
-    try {
-      await Bridge.chatgptLogin();
-      accountFeedback.append(h("div", { class: "notice ok", text: "Sign-in opened in your browser. Finish it there, then Coucou will use your ChatGPT plan through Codex." }));
-    } catch (err) {
-      accountFeedback.append(h("div", { class: "notice err", text: String(err).replace(/^Error:\\s*/, "") }));
+  async function draw() {
+    const status = (await Bridge.openbotStatus()) ?? initial;
+    clear(body);
+    const head = section.querySelector("h2")!;
+    clear(head);
+    head.append(statusDot(status.installed), h("span", { text: "OpenBot" }));
+
+    body.append(h("div", {
+      class: "hint",
+      text: "OpenBot is Coucou's AI companion. Manage Codex/ChatGPT and other providers in OpenBot; Mochi reuses the same local Codex sign-in without copying your credentials.",
+    }));
+
+    if (!status.installed) {
+      body.append(
+        h("div", { class: "notice warn", text: "OpenBot is not installed yet." }),
+        h("div", { class: "row" },
+          h("button", {
+            class: "primary",
+            text: "Download OpenBot",
+            onclick: () => void Bridge.openUrl("https://github.com/nightly-labs/openbot/releases/latest"),
+          }),
+        ),
+      );
+      return;
     }
-  });
-  const localOss = h("button", { text: "Set up Local gpt-oss" });
-  localOss.addEventListener("click", () => void Bridge.openUrl("https://developers.openai.com/learn/gpt-oss"));
 
-  const dot = statusDot(hasKey);
-  const state = h("span", { class: "hint", text: hasKey ? "Key saved in the Windows Credential Manager." : "No key yet — the chat needs one." });
+    body.append(
+      h("div", { class: status.running ? "notice ok" : "notice warn", text: status.running ? "OpenBot is running." : "OpenBot is installed and ready." }),
+      status.path ? h("div", { class: "path", text: status.path }) : h("span", {}),
+    );
 
-  const field = h("input", {
-    type: "password",
-    placeholder: hasKey ? "••••••••••••  (stored)" : "sk-...",
-    style: "flex:1 1 auto;min-width:0",
-    autocomplete: "off",
-    spellcheck: "false",
-  }) as HTMLInputElement;
+    const launch = h("button", { class: "primary", text: status.running ? "Open OpenBot" : "Start OpenBot" });
+    launch.addEventListener("click", async () => {
+      try {
+        await Bridge.openbotLaunch();
+        window.setTimeout(() => void draw(), 900);
+      } catch (err) {
+        body.append(h("div", { class: "notice err", text: String(err).replace(/^Error:\\s*/, "") }));
+      }
+    });
 
-  const saveBtn = h("button", { class: "primary", text: "Save key" });
-  const clearBtn = h("button", { class: "danger", text: "Remove" });
-  const feedback = h("div", {});
+    const signIn = h("button", { text: "Connect Codex / ChatGPT" });
+    signIn.addEventListener("click", async () => {
+      try {
+        await Bridge.openbotLaunch();
+        if ((await Bridge.codexInstalled()) ?? false) {
+          await Bridge.chatgptLogin();
+          body.append(h("div", { class: "notice ok", text: "Codex sign-in opened. Finish sign-in, then Coucou and OpenBot will use the same local account." }));
+        } else {
+          body.append(h("div", { class: "notice warn", text: "Open OpenBot → Providers → Codex → Download/Connect. OpenBot will install and manage the Codex runtime." }));
+        }
+      } catch (err) {
+        body.append(h("div", { class: "notice err", text: String(err).replace(/^Error:\\s*/, "") }));
+      }
+    });
 
-  async function refresh() {
-    const present = (await Bridge.secretPresent("openai-api-key")) ?? false;
-    dot.style.background = present ? "#22c55e" : "#f4505e";
-    state.textContent = present
-      ? "Key saved in the Windows Credential Manager."
-      : "No key yet — the chat needs one.";
-    field.placeholder = present ? "••••••••••••  (stored)" : "sk-...";
-    clearBtn.style.display = present ? "" : "none";
+    body.append(h("div", { class: "row" }, launch, signIn));
+
+    if (hasKey) {
+      body.append(h("div", { class: "hint", text: "An old OpenAI API key is still saved as a compatibility fallback. OpenBot/Codex sign-in is preferred and does not require API credits." }));
+    }
   }
 
-  saveBtn.addEventListener("click", async () => {
-    const value = field.value.trim();
-    if (!value) return;
-    clear(feedback);
-    try {
-      await Bridge.secretSet("openai-api-key", value);
-      field.value = "";
-      feedback.append(h("div", { class: "notice ok", text: "Saved. It never touches disk." }));
-      await refresh();
-    } catch (err) {
-      feedback.append(h("div", { class: "notice err", text: `Could not save: ${String(err)}` }));
-    }
-  });
-
-  clearBtn.addEventListener("click", async () => {
-    clear(feedback);
-    try {
-      await Bridge.secretClear("openai-api-key");
-      feedback.append(h("div", { class: "notice ok", text: "Key removed." }));
-      await refresh();
-    } catch (err) {
-      feedback.append(h("div", { class: "notice err", text: `Could not remove: ${String(err)}` }));
-    }
-  });
-
-  const model = h("select", {}) as HTMLSelectElement;
-  for (const [id, label] of MODELS) model.append(h("option", { value: id, text: label }));
-  if (!MODELS.some(([id]) => id === settings.model)) {
-    model.append(h("option", { value: settings.model, text: settings.model }));
-  }
-  model.value = settings.model;
-  model.addEventListener("change", () => {
-    settings.model = model.value;
-    void save();
-  });
-
-  clearBtn.style.display = hasKey ? "" : "none";
-
-  return h(
-    "section",
-    {},
-    h("h2", {}, dot, h("span", { text: "ChatGPT / OpenAI" })),
-    h("div", { class: "hint", text: "Recommended: Continue with ChatGPT to use your eligible ChatGPT plan through Codex. API key is optional. You can also run OpenAI gpt-oss locally." }),
-    h("div", { class: "row" }, signIn, localOss),
-    accountFeedback,
-    state,
-    h("div", { class: "row" }, h("label", { text: "API key" }), field, saveBtn, clearBtn),
-    h("div", { class: "row" }, h("label", { text: "Model" }), model),
-    feedback,
-  );
+  void draw();
+  return section;
 }
 
 // ── Integrations section ──────────────────────────────────────────────────────
@@ -449,6 +420,7 @@ async function main() {
   };
 
   const hasKey = (await Bridge.secretPresent("openai-api-key")) ?? false;
+  const openbot = (await Bridge.openbotStatus()) ?? { installed: false, running: false, path: null };
 
   const keys = [
     "stripe-api-key", "github-token", "vercel-token",
@@ -461,12 +433,12 @@ async function main() {
   root.append(
     h("h1", {}, h("span", { text: "Coucou" }), h("span", { class: "version", text: version })),
     codexSection(status),
-    apiSection(hasKey),
+    openBotSection(openbot, hasKey),
     integrationsSection(present),
     generalSection(),
     h("div", {
       class: "hint",
-      text: "No telemetry. Network requests only go to the services you configure yourself.",
+      text: "OpenBot manages AI providers locally. Coucou does not copy provider credentials.",
     }),
   );
 
