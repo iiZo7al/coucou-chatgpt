@@ -63,7 +63,7 @@ your integrations sit in the coloured pills next to Mochi.
 <img src="screenshots/settings.png" width="562" alt="The settings window">
 
 Open **Settings… → Codex → Install hooks…**. You get the exact diff of what
-will change in `%USERPROFILE%\.codex\settings.json`, the path of the dated backup
+will change in `%USERPROFILE%\.codex\hooks.json`, the path of the dated backup
 that will be taken, and nothing is written until you click. Your own hooks are
 never touched, and uninstalling removes only Coucou's entries.
 
@@ -94,7 +94,7 @@ C++"). WebView2 ships with Windows 10/11.
 cd windows
 npm install
 npm run tauri dev      # live-reloading development build
-npm run pack           # builds the installer and drops it in windows/release/
+npm run tauri build    # builds the NSIS installer in target/release/bundle/nsis/
 ```
 
 `npm run dev` alone serves the front end in an ordinary browser, which is enough
@@ -102,13 +102,7 @@ to work on the island's looks. It also serves `dev/upload-preview.html`, which
 replays the whole file-drop choreography on a loop — the one part of the UI that
 otherwise needs a real drag from Explorer to see. Neither page ships in the app.
 
-`npm run pack` leaves two files in `windows/release/`, the same names the release
-workflow publishes:
-
-```
-Coucou-Windows-X.Y.Z-setup.exe    the versioned installer
-Coucou-Windows-setup.exe          the same file under the rolling name
-```
+`npm run tauri build` produces the Windows NSIS installer under `target/release/bundle/nsis/`. The GitHub Actions workflow uploads that installer as the `Coucou-ChatGPT-Windows` artifact.
 
 Installing is optional — `target/release/coucou.exe` runs on its own. There is no
 window in the taskbar and no console: the island at the top of the screen and the
