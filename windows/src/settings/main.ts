@@ -176,7 +176,9 @@ function codexSection(status: HookStatus): HTMLElement {
 const MODELS: [string, string][] = [
   ["gpt-5.6-sol", "GPT-5.6 Sol"],
   ["gpt-5.6", "GPT-5.6"],
-  ["gpt-5.6-mini", "GPT-5.6 Mini"],
+  ["gpt-5.6-terra", "GPT-5.6 Terra"],
+  ["gpt-5.6-luna", "GPT-5.6 Luna"],
+  ["gpt-5-mini", "GPT-5 Mini"],
 ];
 
 function apiSection(hasKey: boolean): HTMLElement {
