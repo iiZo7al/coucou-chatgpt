@@ -103,11 +103,11 @@ final class KeychainStore: @unchecked Sendable {
 // MARK: - OpenAI API
 
 @MainActor
-final class ClaudeService {
-    static let shared = ClaudeService()
+final class OpenAIService {
+    static let shared = OpenAIService()
 
     private let endpoint = URL(string: "https://api.openai.com/v1/responses")!
-    private let model = "claude-sonnet-4-6"
+    private let model = "gpt-5.6-sol"
 
     var apiKey: String? { KeychainStore.shared.get("openai-api-key") }
 
