@@ -1,17 +1,17 @@
 # Notch Buddy — intégrations
 
 Règle d'or : **vérifier la doc officielle au moment d'implémenter**. Les formats ci-dessous sont le plan, pas une garantie. Sources à relire :
-- Hooks Claude Code : https://code.claude.com/docs/en/hooks
-- API Claude (Messages, outil de recherche web, modèles) : https://docs.claude.com/en/api/overview
+- Hooks Codex : https://developers.openai.com/docs/hooks
+- API ChatGPT (Messages, outil de recherche web, modèles) : https://developers.openai.com/api/docs/overview
 - API publique n8n : `{URL de l'instance}/api/v1/docs` (playground de l'instance de Louis)
 
 ---
 
-## 1. Claude Code (sessions de Louis)
+## 1. Codex (sessions de Louis)
 
 ### Architecture
 ```
-claude (terminal, VS Code, app Claude)
+claude (terminal, VS Code, app ChatGPT)
   └─ hook "command" ─► nb-hook (petit exécutable Swift, livré avec l'app)
                          └─ socket Unix ─► Notch Buddy.app
                          ◄─ décision (pour PermissionRequest)
@@ -19,7 +19,7 @@ claude (terminal, VS Code, app Claude)
 - `nb-hook` : cible séparée dans le projet, copiée dans `~/Library/Application Support/NotchBuddy/bin/nb-hook` au premier lancement.
 - Socket : `~/Library/Application Support/NotchBuddy/nb.sock`.
 - `nb-hook <Event>` lit le JSON du hook sur stdin, ajoute le contexte du terminal (`TERM_PROGRAM`, `ITERM_SESSION_ID`, `TERM_SESSION_ID`, `__CFBundleIdentifier`, le tty trouvé en remontant les processus parents, `cwd`), l'envoie à l'app.
-- **Si l'app ne répond pas en 300 ms, `nb-hook` sort en code 0 sans rien écrire** : Claude Code continue normalement. Jamais de blocage.
+- **Si l'app ne répond pas en 300 ms, `nb-hook` sort en code 0 sans rien écrire** : Codex continue normalement. Jamais de blocage.
 
 ### Événements à brancher et état du bonhomme
 | Hook | Effet dans l'app |
@@ -40,12 +40,12 @@ Vérifier dans la doc la liste exacte des événements et leurs champs.
 ### Approuver depuis le notch
 - Sur `PermissionRequest`, `nb-hook` **attend** la décision de l'app (défaut 110 s, réglable) puis écrit sur stdout le JSON de décision du hook (d'après la doc actuelle : `hookSpecificOutput` avec `decision.behavior` = `allow` ou `deny`). Timeout du hook dans settings.json : décision + 10 s.
 - Pas de réponse avant le délai, ou app fermée → aucune sortie, le terminal affiche sa demande habituelle. Si Louis répond dans le terminal, l'app retire l'alerte au prochain événement de la session.
-- Un bug a été signalé où `deny` était ignoré sur `PermissionRequest` (issue GitHub anthropics/claude-code #19298). **Tester allow et deny** ; si deny ne marche pas, basculer la décision sur `PreToolUse` (`permissionDecision`) pour les outils concernés.
+- Un bug a été signalé où `deny` était ignoré sur `PermissionRequest` (issue GitHub openais/claude-code #19298). **Tester allow et deny** ; si deny ne marche pas, basculer la décision sur `PreToolUse` (`permissionDecision`) pour les outils concernés.
 - « Toujours autoriser » : si la doc permet de renvoyer une règle de permission persistante, l'utiliser. Sinon l'app garde sa propre liste (projet + outil + motif de commande) et répond `allow` automatiquement ensuite. Liste visible et supprimable dans les réglages.
 - Raccourcis Y / N quand la vue `approval` est ouverte.
 
 ### Répondre aux questions
-- Si Claude utilise l'outil de question (`AskUserQuestion`), l'intercepter en `PreToolUse` et afficher les options dans la vue `question`.
+- Si ChatGPT utilise l'outil de question (`AskUserQuestion`), l'intercepter en `PreToolUse` et afficher les options dans la vue `question`.
 - Vérifier dans la doc si un hook peut fournir la réponse. Si oui : clic sur une option = réponse. **Si non** : la vue affiche la question et un bouton « Répondre dans le terminal » qui saute à la session. Ne pas bricoler de frappe clavier simulée.
 
 ### Sauter au terminal
@@ -55,12 +55,12 @@ Vérifier dans la doc la liste exacte des événements et leurs champs.
 | `TERM_PROGRAM=iTerm.app` + `ITERM_SESSION_ID` | AppleScript iTerm : sélectionner la session, activer |
 | `TERM_PROGRAM=vscode` | ouvrir le dossier `cwd` dans VS Code ou Cursor (selon `__CFBundleIdentifier`) |
 | Ghostty, Warp, autre | activer l'app |
-| rien (app Claude) | activer l'app Claude |
+| rien (app ChatGPT) | activer l'app ChatGPT |
 Demande l'autorisation Automatisation la première fois (normal).
 
 ### Installation des hooks : procédure obligatoire
-1. Lire `~/.claude/settings.json` (le créer s'il n'existe pas).
-2. Copier en `~/.claude/settings.json.bak-AAAAMMJJ-HHMM`.
+1. Lire `~/.codex/settings.json` (le créer s'il n'existe pas).
+2. Copier en `~/.codex/settings.json.bak-AAAAMMJJ-HHMM`.
 3. **Fusionner** : ajouter les hooks Notch Buddy sans toucher aux hooks existants. Chemin de `nb-hook` entre guillemets (il contient un espace).
 4. Montrer le diff à Louis, attendre son OK, écrire.
 5. Bouton « Désinstaller les hooks » dans les réglages qui retire uniquement les entrées Notch Buddy.
@@ -88,7 +88,7 @@ Demande l'autorisation Automatisation la première fois (normal).
 
 - Glisser-déposer natif sur la panel (types `fileURL`). Copier les fichiers dans `~/Library/Application Support/NotchBuddy/inbox/` (c'est la phase `uploading`).
 - Vue `choose` :
-  - **Poser une question dessus** → vue `prompt` avec une pastille du fichier. Envoi à l'API Claude (§5) : PDF en bloc `document`, images en bloc `image`, texte et code (≤ 200 Ko) en texte. Autres types : message « Je ne sais pas lire ce format, mais je peux l'envoyer par mail. »
+  - **Poser une question dessus** → vue `prompt` avec une pastille du fichier. Envoi à l'API ChatGPT (§5) : PDF en bloc `document`, images en bloc `image`, texte et code (≤ 200 Ko) en texte. Autres types : message « Je ne sais pas lire ce format, mais je peux l'envoyer par mail. »
   - **Envoyer par mail** → vue `mail` (§6).
 - Nettoyer l'inbox après 7 jours.
 
@@ -98,7 +98,7 @@ Demande l'autorisation Automatisation la première fois (normal).
 
 1. Au lâcher, trouver la fenêtre sous le point : `CGWindowListCopyWindowInfo(.optionOnScreenOnly)`, première fenêtre de couche 0 qui n'est pas la nôtre et contient le point. Récupérer app, titre, cadre.
 2. Afficher le **halo** : une panel transparente, non cliquable, posée sur le cadre de la fenêtre. Bordure conique arc-en-ciel de 3 pt qui tourne en 3 s (`#FF6B5B → #F7B32B → #2DD4A7 → #38BDF8 → #A78BFA → #F472B6`), voile multicolore en mode multiply qui respire (voir `.attach` du prototype), fondu d'entrée 600 ms. Son `attach`, émote Clin d'œil.
-3. Contexte envoyé à Claude :
+3. Contexte envoyé à ChatGPT :
    - capture de la fenêtre avec ScreenCaptureKit (`SCScreenshotManager`), redimensionnée à 1568 px de large max ;
    - si c'est Safari, Chrome, Arc ou Brave : URL et titre de l'onglet actif via AppleScript.
 4. Vue `prompt` avec la pastille « Safari, escale.fr » (app + domaine), focus sur le champ.
@@ -108,9 +108,9 @@ Permissions : Enregistrement de l'écran (capture) et Automatisation (navigateur
 
 ---
 
-## 5. API Claude (recherche)
+## 5. API ChatGPT (recherche)
 
-- `POST https://api.anthropic.com/v1/messages`, en-têtes `x-api-key`, `anthropic-version`, `content-type: application/json` (versions à vérifier dans la doc).
+- `POST https://api.openai.com/v1/messages`, en-têtes `x-api-key`, `openai-version`, `content-type: application/json` (versions à vérifier dans la doc).
 - Modèle par défaut : `claude-sonnet-5`, réglable dans les réglages. Vérifier la liste des modèles disponibles dans la doc.
 - Outil de recherche web côté serveur de l'API : l'identifiant de type à jour est dans la doc (au moment d'écrire, `web_search_20250305`) ; `max_uses` 5.
 - Prompt système (français) : répondre court, pour un affichage dans le notch, au format JSON strict :

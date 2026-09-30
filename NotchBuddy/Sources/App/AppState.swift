@@ -4,9 +4,9 @@ import Combine
 
 // Integration pills — always-present, never purged
 extension AgentTask {
-    /// All available integration pills. Claude is always active; others are opt-in (max 4).
+    /// All available integration pills. Codex is always active; others are opt-in (max 4).
     static let integrationAgents: [AgentTask] = [
-        AgentTask(id: "integration_claude",  name: "VS Code",   color: "#F5F6F8", state: .idle, steps: [], source: .claudeCode, isIntegration: true),
+        AgentTask(id: "integration_codex",  name: "VS Code",   color: "#F5F6F8", state: .idle, steps: [], source: .codex, isIntegration: true),
         AgentTask(id: "integration_resend",  name: "Resend",    color: "#22C55E", state: .idle, steps: [], source: .n8n, isIntegration: true),
         AgentTask(id: "integration_n8n",     name: "n8n",       color: "#F29B38", state: .idle, steps: [], source: .n8n, isIntegration: true),
         AgentTask(id: "integration_vercel",  name: "Vercel",    color: "#7C5CFF", state: .idle, steps: [], source: .n8n, isIntegration: true),
@@ -177,7 +177,7 @@ final class AppState: ObservableObject {
     // Chat conversation history
     @Published var chatHistory: [ChatMessage] = []
 
-    // Pending approval request from Claude Code hook
+    // Pending approval request from Codex hook
     @Published var pendingApproval: ApprovalInfo? = nil
 
     // MARK: - Init (loads persisted settings)
@@ -266,22 +266,22 @@ final class AppState: ObservableObject {
     /// Load integration pills respecting activeIntegrations. VS Code always loads. Safe to call multiple times.
     func loadIntegrationTasks() {
         for task in AgentTask.integrationAgents {
-            let shouldLoad = task.id == "integration_claude" || activeIntegrations.contains(task.id)
+            let shouldLoad = task.id == "integration_codex" || activeIntegrations.contains(task.id)
             let loaded = tasks.contains(where: { $0.id == task.id })
             if shouldLoad && !loaded { tasks.append(task) }
             if !shouldLoad && loaded { tasks.removeAll { $0.id == task.id } }
         }
-        if focusId == nil { focusId = "integration_claude" }
+        if focusId == nil { focusId = "integration_codex" }
         syncMode()
     }
 
     /// Toggle an integration pill on/off. VS Code cannot be toggled. Max 4 active at once.
     func toggleIntegration(_ id: String) {
-        guard id != "integration_claude" else { return }
+        guard id != "integration_codex" else { return }
         if activeIntegrations.contains(id) {
             activeIntegrations.remove(id)
             tasks.removeAll { $0.id == id }
-            if focusId == id { focusId = "integration_claude" }
+            if focusId == id { focusId = "integration_codex" }
         } else {
             guard activeIntegrations.count < 4 else { return }
             activeIntegrations.insert(id)

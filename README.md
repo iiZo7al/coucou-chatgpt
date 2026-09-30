@@ -4,9 +4,9 @@
 
 # Coucou
 
-**A tiny friend that lives in your MacBook's notch — or at the top of your screen on Windows — and keeps an eye on your Claude Code sessions.**
+**A tiny friend that lives in your MacBook's notch — or at the top of your screen on Windows — and keeps an eye on your Codex sessions.**
 
-Approve permissions, watch your agents work, drop a file, chat with Claude — all without leaving what you're doing.
+Approve permissions, watch your agents work, drop a file, chat with ChatGPT — all without leaving what you're doing.
 
 ![macOS 15+](https://img.shields.io/badge/macOS-15%2B-black?logo=apple)
 ![Windows 10/11](https://img.shields.io/badge/Windows-10%2F11-0078D4?logo=windows&logoColor=white)
@@ -27,16 +27,16 @@ Approve permissions, watch your agents work, drop a file, chat with Claude — a
 Some studios showed off gorgeous notch companions… and never let anyone use them.
 **Coucou is the open version.** Every line of code, every animation, every sound — free to use, read, fork and remix.
 
-Meet **Mochi**: a soft little squircle with big eyes that pops out of your notch, waves hello, follows your cursor with its eyes, gets annoyed when you poke it (and dizzy if you insist), and tells you the moment Claude Code needs you.
+Meet **Mochi**: a soft little squircle with big eyes that pops out of your notch, waves hello, follows your cursor with its eyes, gets annoyed when you poke it (and dizzy if you insist), and tells you the moment Codex needs you.
 
 ## Features
 
-- 🤖 **Claude Code, live** — see every session in your notch: what it reads, edits and runs, step by step. Finished? Mochi does a happy little jump.
-- ✅ **Approve from the notch** — Claude Code permission requests show up with **Allow / Deny**. One click, back to work.
+- 🤖 **Codex, live** — see every session in your notch: what it reads, edits and runs, step by step. Finished? Mochi does a happy little jump.
+- ✅ **Approve from the notch** — Codex permission requests show up with **Allow / Deny**. One click, back to work.
 - 🧑‍💻 **Jump to the right terminal** — open the exact terminal window of a session *(macOS)*.
-- 💬 **Ask Claude anything** — built-in chat, straight from the notch.
+- 💬 **Ask ChatGPT anything** — built-in chat, straight from the notch.
 - 📎 **Drop a file on the notch** — Mochi turns into a box and swallows it, then ask a question about it or send it by email *(email: macOS, Mail.app)*.
-- 🪟 **Drag Mochi onto any window** — attach that window as context for Claude *(macOS)*.
+- 🪟 **Drag Mochi onto any window** — attach that window as context for ChatGPT *(macOS)*.
 - 🔌 **Integrations** — Stripe payments, n8n workflows, GitHub, Vercel deployments, Resend emails, Notion, Cal.com. Each one gets its own little colored Mochi.
 - 🎭 **A real character** — idle breathing, blinks, eyes on a sphere that follow your mouse, emotes, 28 handcrafted sounds, a greeting on launch.
 - 🫥 **Invisible when idle** — hides away when nothing is running, peeks out when you hover the notch (the top edge of the screen on Windows).
@@ -44,11 +44,11 @@ Meet **Mochi**: a soft little squircle with big eyes that pops out of your notch
 
 <table>
 <tr>
-<td><img src="docs/media/claude-code.png" alt="Claude Code session"></td>
+<td><img src="docs/media/claude-code.png" alt="Codex session"></td>
 <td><img src="docs/media/stripe.png" alt="Stripe payments"></td>
 </tr>
 <tr>
-<td><img src="docs/media/chat.png" alt="Chat with Claude"></td>
+<td><img src="docs/media/chat.png" alt="Chat with ChatGPT"></td>
 <td><img src="docs/media/dizzy.png" alt="Too many hits"></td>
 </tr>
 </table>
@@ -98,11 +98,11 @@ Click the Coucou icon in the menu bar (macOS) or in the system tray (Windows) �
 
 | What | Why | Where the key goes |
 |---|---|---|
-| **Claude Code hooks** | live sessions and approvals | **Install hooks** — Coucou backs up `~/.claude/settings.json`, merges its hooks and shows you the diff before writing anything |
-| **Anthropic API key** | chat and questions about files | Keychain / Windows Credential Manager |
+| **Codex hooks** | live sessions and approvals | **Install hooks** — Coucou backs up `~/.codex/settings.json`, merges its hooks and shows you the diff before writing anything |
+| **OpenAI API key** | chat and questions about files | Keychain / Windows Credential Manager |
 | Stripe, n8n, GitHub, Vercel, Resend, Notion, Cal.com | the integration pills | Keychain / Windows Credential Manager, all optional |
 
-If Coucou isn't running, the hook exits immediately: **Claude Code is never blocked.**
+If Coucou isn't running, the hook exits immediately: **Codex is never blocked.**
 
 ## Things to try
 
@@ -122,7 +122,7 @@ If Coucou isn't running, the hook exits immediately: **Claude Code is never bloc
 
 - **Island**: a borderless `NSPanel` hugging the notch, driven by a small state machine (`hidden → petit → home`).
 - **Character**: drawn in SwiftUI `Canvas` + `TimelineView` at 60 fps — squircle body, eyes projected on a sphere, spring animations. No Rive, no Lottie, no images.
-- **Claude Code**: a tiny `nb-hook` script receives hook events and forwards them over a Unix socket to the app. For approvals it waits for your click, then answers the hook.
+- **Codex**: a tiny `nb-hook` script receives hook events and forwards them over a Unix socket to the app. For approvals it waits for your click, then answers the hook.
 - **Integrations**: lightweight pollers, paused when nothing is watching.
 - **Sounds**: 28 short WAVs played through preloaded `AVAudioPlayer`s.
 
@@ -131,7 +131,7 @@ The macOS app is native Swift 6 / SwiftUI / AppKit with **zero third-party depen
 **Windows**
 
 - A [Tauri 2](https://tauri.app) app (Rust + TypeScript): the island is a transparent, always-on-top window that never steals focus, Mochi is drawn in Canvas 2D with the same shapes, timings and sounds as on the Mac.
-- Claude Code hooks go through a tiny `coucou-hook.exe` and a named pipe; keys live in Windows Credential Manager.
+- Codex hooks go through a tiny `coucou-hook.exe` and a named pipe; keys live in Windows Credential Manager.
 - Details and differences in [`windows/README.md`](windows/README.md).
 
 ## Contributing
@@ -140,7 +140,7 @@ Issues and PRs are very welcome — new integrations, new emotes, new sounds, bu
 
 ## Credits
 
-Built by [Louis Raillé](https://louisraille.fr) with Claude Code.
+Built by [Louis Raillé](https://louisraille.fr) with Codex.
 Inspired by the notch-companion concepts shared by design studios — this project is independent and not affiliated with any of them.
 
 ## License

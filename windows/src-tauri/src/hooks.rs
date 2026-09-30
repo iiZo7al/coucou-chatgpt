@@ -1,12 +1,12 @@
-// Claude Code hook installation.
+// Codex hook installation.
 //
-// The rule from CLAUDE.md is strict and is followed to the letter:
-// read %USERPROFILE%\.claude\settings.json, take a dated backup, merge without
+// The rule from AGENTS.md is strict and is followed to the letter:
+// read %USERPROFILE%\.codex\hooks.json, take a dated backup, merge without
 // touching anybody else's hooks, show the diff, and write only after an explicit
 // click. Uninstall removes Coucou's entries and nothing else.
 //
 // The command is only the quoted exe path in forward slashes plus the event name:
-// on Windows Claude Code runs hook commands through Git Bash, and anything with
+// on Windows Codex runs hook commands through Git Bash, and anything with
 // PowerShell or cmd in it breaks.
 
 use std::path::{Path, PathBuf};
@@ -18,7 +18,7 @@ use windows::Win32::System::SystemInformation::GetLocalTime;
 
 use crate::settings;
 
-/// Every event the island reacts to, with the hook timeout written to settings.json.
+/// Every event the island reacts to, with the hook timeout written to hooks.json.
 /// PermissionRequest waits for a human, so it gets the decision timeout + 10 s.
 pub const HOOK_EVENTS: &[(&str, u64)] = &[
     ("SessionStart", 10),
@@ -26,16 +26,13 @@ pub const HOOK_EVENTS: &[(&str, u64)] = &[
     ("UserPromptSubmit", 10),
     ("PreToolUse", 10),
     ("PostToolUse", 10),
-    ("PostToolUseFailure", 10),
     ("PermissionRequest", 120),
-    ("Notification", 10),
     ("Stop", 10),
-    ("StopFailure", 10),
     ("SubagentStart", 10),
     ("SubagentStop", 10),
 ];
 
-/// Marker that identifies a Coucou entry inside settings.json.
+/// Marker that identifies a Coucou entry inside hooks.json.
 const MARKER: &str = "coucou-hook";
 
 #[derive(Serialize)]
@@ -65,10 +62,10 @@ fn home() -> PathBuf {
 }
 
 pub fn settings_path() -> PathBuf {
-    home().join(".claude").join("settings.json")
+    home().join(".codex").join("hooks.json")
 }
 
-/// Reads `~/.claude/settings.json`.
+/// Reads `~/.codex/hooks.json`.
 ///
 /// The only error that means "start from nothing" is the file not being there.
 /// Everything else — a lock held by another process, a permission problem, JSON
@@ -206,7 +203,7 @@ fn stamp() -> String {
 
 fn backup_path() -> PathBuf {
     let p = settings_path();
-    p.with_file_name(format!("settings.json.bak-{}", stamp()))
+    p.with_file_name(format!("hooks.json.bak-{}", stamp()))
 }
 
 /// Identifies the exact bytes a preview was computed from. FNV-1a is plenty:
@@ -293,7 +290,7 @@ pub fn write(install: bool, fingerprint: &str) -> Result<String, String> {
     text.push('\n');
 
     // Write beside the target and rename over it: a crash or a full disk leaves
-    // the original settings.json intact rather than half a file.
+    // the original hooks.json intact rather than half a file.
     let temp = path.with_extension(format!("json.coucou-{}", std::process::id()));
     std::fs::write(&temp, text.as_bytes()).map_err(|e| format!("write failed: {e}"))?;
     if let Err(err) = std::fs::rename(&temp, &path) {
@@ -337,7 +334,7 @@ pub fn ensure_hook_exe(app: &AppHandle) {
     let tried: Vec<String> = candidates.iter().map(|p| p.display().to_string()).collect();
     let Some(src) = candidates.into_iter().find(|p| p.exists()) else {
         crate::log::line(format!(
-            "coucou-hook.exe not found — Claude Code hooks cannot work. Looked in: {}",
+            "coucou-hook.exe not found — Codex hooks cannot work. Looked in: {}",
             tried.join(", ")
         ));
         return;
@@ -361,7 +358,7 @@ pub fn ensure_hook_exe(app: &AppHandle) {
 
 // ── Minimal unified diff (LCS) ────────────────────────────────────────────────
 
-/// settings.json is short, so a plain O(n·m) LCS is the simplest honest diff.
+/// hooks.json is short, so a plain O(n·m) LCS is the simplest honest diff.
 fn unified_diff(before: &str, after: &str) -> String {
     let a: Vec<&str> = before.lines().collect();
     let b: Vec<&str> = after.lines().collect();
@@ -439,7 +436,7 @@ fn unified_diff(before: &str, after: &str) -> String {
 mod tests {
     use super::*;
 
-    const WHERE: &str = "settings.json";
+    const WHERE: &str = "hooks.json";
 
     #[test]
     fn a_utf8_bom_is_stripped_not_treated_as_corruption() {
@@ -473,7 +470,7 @@ mod tests {
     #[test]
     fn merging_keeps_every_other_setting_and_every_foreign_hook() {
         let existing = serde_json::json!({
-            "model": "claude-opus-5",
+            "model": "gpt-5.6-sol",
             "theme": "dark",
             "enabledPlugins": ["a", "b"],
             "hooks": {
@@ -487,7 +484,7 @@ mod tests {
         });
 
         let after = merged(&existing);
-        assert_eq!(after["model"], "claude-opus-5");
+        assert_eq!(after["model"], "gpt-5.6-sol");
         assert_eq!(after["theme"], "dark");
         assert_eq!(after["enabledPlugins"], serde_json::json!(["a", "b"]));
 
@@ -517,14 +514,14 @@ mod tests {
     fn writing_backs_up_preserves_and_refuses_a_changed_file() {
         let tmp = std::env::temp_dir().join(format!("coucou-hooks-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&tmp);
-        std::fs::create_dir_all(tmp.join(".claude")).unwrap();
+        std::fs::create_dir_all(tmp.join(".codex")).unwrap();
         std::env::set_var("USERPROFILE", &tmp);
 
         let path = settings_path();
         assert!(path.starts_with(&tmp), "the test must not touch the real home");
 
         // A real-shaped file, written the way PowerShell 5 would: UTF-8 with BOM.
-        let original = r#"{"model":"claude-opus-5","theme":"dark","tui":{"x":1},"hooks":{"PreToolUse":[{"hooks":[{"type":"command","command":"other-tool.exe"}]}]}}"#;
+        let original = r#"{"model":"gpt-5.6-sol","theme":"dark","tui":{"x":1},"hooks":{"PreToolUse":[{"hooks":[{"type":"command","command":"other-tool.exe"}]}]}}"#;
         let mut bytes = vec![0xEF, 0xBB, 0xBF];
         bytes.extend_from_slice(original.as_bytes());
         std::fs::write(&path, &bytes).unwrap();
@@ -539,7 +536,7 @@ mod tests {
 
         // Everything else survived, and so did the other tool's hook.
         let after: Value = serde_json::from_slice(&std::fs::read(&path).unwrap()).unwrap();
-        assert_eq!(after["model"], "claude-opus-5");
+        assert_eq!(after["model"], "gpt-5.6-sol");
         assert_eq!(after["theme"], "dark");
         assert_eq!(after["tui"]["x"], 1);
         let pre = after["hooks"]["PreToolUse"].as_array().unwrap();

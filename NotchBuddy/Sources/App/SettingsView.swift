@@ -4,14 +4,14 @@ import AppKit
 
 struct SettingsView: View {
     @ObservedObject private var state = AppState.shared
-    @State private var apiKey: String = KeychainStore.shared.get("anthropic-api-key") ?? ""
+    @State private var apiKey: String = KeychainStore.shared.get("openai-api-key") ?? ""
     @State private var launchAtStartup: Bool = (SMAppService.mainApp.status == .enabled)
     @State private var statusMessage: String = ""
     @State private var showDiff: Bool = false
     @State private var pendingHookJSON: String = ""
     @State private var hookNeedsUpdate: Bool = HookServer.hooksNeedUpdate()
     #if APPSTORE
-    @State private var claudeAccessGranted: Bool = (UserDefaults.standard.data(forKey: "claudeDirectoryBookmark") != nil)
+    @State private var codexAccessGranted: Bool = (UserDefaults.standard.data(forKey: "codexDirectoryBookmark") != nil)
     #endif
 
     // Integration keys
@@ -50,12 +50,12 @@ struct SettingsView: View {
             VStack(alignment: .leading, spacing: 18) {
 
                 // MARK: API
-                GroupBox("Anthropic API") {
+                GroupBox("OpenAI API") {
                     VStack(alignment: .leading, spacing: 8) {
-                        SecureField("API key (sk-ant-…)", text: $apiKey)
+                        SecureField("API key (sk-…)", text: $apiKey)
                             .textFieldStyle(.roundedBorder)
                         Button("Save") {
-                            KeychainStore.shared.set("anthropic-api-key", value: apiKey)
+                            KeychainStore.shared.set("openai-api-key", value: apiKey)
                             statusMessage = "✓ Key saved."
                         }
                         .buttonStyle(.borderedProminent)
@@ -64,7 +64,7 @@ struct SettingsView: View {
                 }
 
                 // MARK: Hooks
-                GroupBox("Claude Code Hooks") {
+                GroupBox("Codex Hooks") {
                     VStack(alignment: .leading, spacing: 10) {
                         if hookNeedsUpdate {
                             HStack(spacing: 6) {
@@ -81,8 +81,8 @@ struct SettingsView: View {
                             #endif
                         }
                         #if APPSTORE
-                        if claudeAccessGranted {
-                            Text("~/.claude/coucou/nb-hook")
+                        if codexAccessGranted {
+                            Text("~/.codex/coucou/nb-hook")
                                 .font(.system(size: 11, design: .monospaced))
                                 .foregroundColor(.secondary)
                             HStack(spacing: 10) {
@@ -92,10 +92,10 @@ struct SettingsView: View {
                                     .buttonStyle(.bordered)
                             }
                         } else {
-                            Text("Choose your ~/.claude folder so Coucou can add its hooks.")
+                            Text("Choose your ~/.codex folder so Coucou can add its hooks.")
                                 .font(.system(size: 12))
                                 .foregroundColor(.secondary)
-                            Button("Choose .claude folder…") { chooseClaudeFolder() }
+                            Button("Choose .codex folder…") { chooseCodexFolder() }
                                 .buttonStyle(.borderedProminent)
                         }
                         #else
@@ -371,9 +371,9 @@ struct SettingsView: View {
     // MARK: - App Store: hooks via NSOpenPanel + security-scoped bookmark
 
     #if APPSTORE
-    private func chooseClaudeFolder() {
+    private func chooseCodexFolder() {
         let panel = NSOpenPanel()
-        panel.message = "Choose your .claude folder so Coucou can add its hooks"
+        panel.message = "Choose your .codex folder so Coucou can add its hooks"
         panel.prompt = "Choose"
         panel.canChooseFiles = false
         panel.canChooseDirectories = true
@@ -386,17 +386,17 @@ struct SettingsView: View {
                     includingResourceValuesForKeys: nil,
                     relativeTo: nil
                 )
-                UserDefaults.standard.set(data, forKey: "claudeDirectoryBookmark")
-                claudeAccessGranted = true
-                statusMessage = "✓ .claude folder access granted."
+                UserDefaults.standard.set(data, forKey: "codexDirectoryBookmark")
+                codexAccessGranted = true
+                statusMessage = "✓ .codex folder access granted."
             } catch {
                 statusMessage = "❌ Bookmark error: \(error.localizedDescription)"
             }
         }
     }
 
-    private func resolveClaudeBookmark() -> URL? {
-        guard let data = UserDefaults.standard.data(forKey: "claudeDirectoryBookmark") else { return nil }
+    private func resolveCodexBookmark() -> URL? {
+        guard let data = UserDefaults.standard.data(forKey: "codexDirectoryBookmark") else { return nil }
         var isStale = false
         guard let url = try? URL(resolvingBookmarkData: data,
                                   options: .withSecurityScope,
@@ -404,23 +404,23 @@ struct SettingsView: View {
                                   bookmarkDataIsStale: &isStale) else { return nil }
         if isStale {
             // Re-prompt user if bookmark is stale
-            claudeAccessGranted = false
-            UserDefaults.standard.removeObject(forKey: "claudeDirectoryBookmark")
+            codexAccessGranted = false
+            UserDefaults.standard.removeObject(forKey: "codexDirectoryBookmark")
             return nil
         }
         return url
     }
 
     private func installHooksAppStore() {
-        guard let claudeURL = resolveClaudeBookmark() else {
-            claudeAccessGranted = false
-            statusMessage = "❌ .claude folder access lost — choose the folder again."
+        guard let codexURL = resolveCodexBookmark() else {
+            codexAccessGranted = false
+            statusMessage = "❌ .codex folder access lost — choose the folder again."
             return
         }
         do {
-            let accessing = claudeURL.startAccessingSecurityScopedResource()
-            defer { if accessing { claudeURL.stopAccessingSecurityScopedResource() } }
-            pendingHookJSON = try HookServer.shared.previewClaudeHooksAppStore(claudeURL: claudeURL)
+            let accessing = codexURL.startAccessingSecurityScopedResource()
+            defer { if accessing { codexURL.stopAccessingSecurityScopedResource() } }
+            pendingHookJSON = try HookServer.shared.previewChatGPTHooksAppStore(codexURL: codexURL)
             showDiff = true
             statusMessage = "Review the JSON below before confirming."
         } catch {
@@ -429,15 +429,15 @@ struct SettingsView: View {
     }
 
     private func confirmInstallAppStore() {
-        guard let claudeURL = resolveClaudeBookmark() else {
-            claudeAccessGranted = false
-            statusMessage = "❌ .claude folder access lost."
+        guard let codexURL = resolveCodexBookmark() else {
+            codexAccessGranted = false
+            statusMessage = "❌ .codex folder access lost."
             return
         }
         do {
-            try HookServer.shared.writeClaudeHooksAppStore(claudeURL: claudeURL)
+            try HookServer.shared.writeChatGPTHooksAppStore(codexURL: codexURL)
             showDiff = false
-            statusMessage = "✓ Hooks installed in ~/.claude/settings.json"
+            statusMessage = "✓ Hooks installed in ~/.codex/settings.json"
             pendingHookJSON = ""
             hookNeedsUpdate = false
         } catch {
@@ -446,13 +446,13 @@ struct SettingsView: View {
     }
 
     private func uninstallHooksAppStore() {
-        guard let claudeURL = resolveClaudeBookmark() else {
-            claudeAccessGranted = false
-            statusMessage = "❌ .claude folder access lost."
+        guard let codexURL = resolveCodexBookmark() else {
+            codexAccessGranted = false
+            statusMessage = "❌ .codex folder access lost."
             return
         }
         do {
-            try HookServer.shared.uninstallClaudeHooksAppStore(claudeURL: claudeURL)
+            try HookServer.shared.uninstallChatGPTHooksAppStore(codexURL: codexURL)
             statusMessage = "✓ Hooks removed."
         } catch {
             statusMessage = "❌ \(error.localizedDescription)"
@@ -462,7 +462,7 @@ struct SettingsView: View {
 
     private func installHooks() {
         do {
-            pendingHookJSON = try HookServer.shared.previewClaudeHooks()
+            pendingHookJSON = try HookServer.shared.previewChatGPTHooks()
             showDiff = true
             statusMessage = "Review the JSON below before confirming."
         } catch {
@@ -472,9 +472,9 @@ struct SettingsView: View {
 
     private func confirmInstall() {
         do {
-            try HookServer.shared.writeClaudeHooks()
+            try HookServer.shared.writeChatGPTHooks()
             showDiff = false
-            statusMessage = "✓ Hooks installed in ~/.claude/settings.json"
+            statusMessage = "✓ Hooks installed in ~/.codex/settings.json"
             pendingHookJSON = ""
             hookNeedsUpdate = false
         } catch {
@@ -484,7 +484,7 @@ struct SettingsView: View {
 
     private func uninstallHooks() {
         do {
-            try HookServer.shared.uninstallClaudeHooks()
+            try HookServer.shared.uninstallChatGPTHooks()
             statusMessage = "✓ Hooks removed."
         } catch {
             statusMessage = "❌ \(error.localizedDescription)"

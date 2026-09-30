@@ -1,6 +1,6 @@
 // Coucou for Windows — app wiring and the commands the island calls.
 
-mod claude;
+mod openai;
 mod files;
 mod hooks;
 mod integrations;
@@ -21,7 +21,7 @@ use serde::Serialize;
 use tauri::{AppHandle, Emitter, Manager, State, WebviewUrl, WebviewWindowBuilder};
 use tauri_plugin_autostart::{ManagerExt, MacosLauncher};
 
-use claude::{Chat, ChatContext, ChatReply};
+use openai::{Chat, ChatContext, ChatReply};
 use files::DroppedFile;
 use hooks::{HookPreview, HookStatus};
 use island::{PollGate, ScreenInfo};
@@ -48,7 +48,7 @@ pub struct BootInfo {
 #[tauri::command]
 fn boot(app: AppHandle, shared: State<Shared>) -> BootInfo {
     let mut settings = shared.settings.lock().unwrap().clone();
-    // The real state of ~/.claude/settings.json wins over whatever we stored.
+    // The real state of ~/.codex/hooks.json wins over whatever we stored.
     settings.hooks_installed = hooks::status().installed;
     let screen = island::screen_info(&app, &settings.screen);
     BootInfo {
@@ -137,7 +137,7 @@ fn open_url(url: String) {
 #[tauri::command]
 fn open_in_vscode(path: Option<String>) -> bool {
     // No `cmd /C` anywhere near this. The path is a project folder chosen by
-    // whoever is using Claude Code, and cmd would happily read `&`, `^` and `%`
+    // whoever is using Codex, and cmd would happily read `&`, `^` and `%`
     // in a folder name as syntax. Finding the launcher ourselves and handing the
     // path over as a separate argument keeps it a path.
     if let Some(code) = find_on_path("code") {
@@ -184,7 +184,7 @@ fn set_paused(paused: bool) {
     integrations::set_paused(paused);
 }
 
-// ── Claude Code hooks ─────────────────────────────────────────────────────────
+// ── Codex hooks ─────────────────────────────────────────────────────────
 
 #[tauri::command]
 fn hooks_status() -> HookStatus {
@@ -206,7 +206,7 @@ fn hooks_apply(
     fingerprint: String,
 ) -> Result<String, String> {
     // The fingerprint comes from the preview the user actually looked at, so a
-    // settings.json that changed in between is refused rather than overwritten.
+    // hooks.json that changed in between is refused rather than overwritten.
     let backup = hooks::write(install, &fingerprint)?;
     let updated = {
         let mut current = shared.settings.lock().unwrap();
@@ -225,14 +225,14 @@ fn approval_decision(app: AppHandle, request_id: String, decision: String) {
 
 /// The island has the card on screen, so the long wait for a human may begin.
 /// Until this arrives the relay only waits a few hundred milliseconds, which is
-/// what stops a paused or unresponsive island from freezing Claude Code.
+/// what stops a paused or unresponsive island from freezing Codex.
 #[tauri::command]
 fn approval_ack(app: AppHandle, request_id: String) {
     pipe::acknowledge(&app, &request_id);
 }
 
 /// Nobody can act on this request — the island is paused, or another card is
-/// already up. Claude Code falls back to asking in the terminal immediately.
+/// already up. Codex falls back to asking in the terminal immediately.
 #[tauri::command]
 fn approval_decline(app: AppHandle, request_id: String) {
     pipe::decline(&app, &request_id);
@@ -249,7 +249,7 @@ async fn chat_send(
     context: Option<ChatContext>,
 ) -> Result<ChatReply, String> {
     let model = shared.settings.lock().unwrap().model.clone();
-    claude::send(&chat, &model, query, context).await
+    openai::send(&chat, &model, query, context).await
 }
 
 #[tauri::command]

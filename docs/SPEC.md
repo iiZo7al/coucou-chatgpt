@@ -65,8 +65,8 @@ rouge `rgba(244,80,94,.55)`, vert `rgba(52,211,153,.5)`, rose `rgba(244,114,182,
 | Vue | Hauteur | Bonhomme (x, Ø) | Contenu | Capture |
 |---|---|---|---|---|
 | `overview` | 196 | 64, 70 | carte gauche 322 de large : ligne agent + défilé de tâches ; carte droite : pastilles | 03 |
-| `empty` | 150 | 70, 62 | « Rien ne tourne pour l'instant. » + bouton « Demander à Claude » | 16 |
-| `approval` | 206 | 62, 56 | agent + « Claude Code veut lancer une commande », bloc code, Refuser (N), Toujours autoriser, Autoriser (Y) | 04 |
+| `empty` | 150 | 70, 62 | « Rien ne tourne pour l'instant. » + bouton « Demander à ChatGPT » | 16 |
+| `approval` | 206 | 62, 56 | agent + « Codex veut lancer une commande », bloc code, Refuser (N), Toujours autoriser, Autoriser (Y) | 04 |
 | `question` | 196 | 62, 56 | agent + question + options en boutons | 05 |
 | `error` | 190 | 62, 58 | agent + outil, titre, détail en rouge `#FF8D97`, Relancer, Ouvrir dans n8n | 06 |
 | `finished` | 170 | 62, 58 | agent + résumé, Voir le terminal, OK | 07 |
@@ -76,7 +76,7 @@ rouge `rgba(244,80,94,.55)`, vert `rgba(52,211,153,.5)`, rose `rgba(244,114,182,
 | `choose` | 170 | 60, 52 | « fichier est prêt. », Poser une question dessus, Envoyer par mail | 11 |
 | `mail` | 210 | 56, 46 | champs À, Objet (+ Message optionnel), Envoyer, Annuler | 12 |
 | `prompt` | 156 | 52, 44 | pastille de contexte + champ + micro + envoyer | 13 |
-| `searching` | 156 | 52, 44 | contexte + texte scintillant « Claude lit la page et cherche sur le web… » | 14 |
+| `searching` | 156 | 52, 44 | contexte + texte scintillant « ChatGPT lit la page et cherche sur le web… » | 14 |
 | `result` | 262 (s'adapte au contenu, max 320) | 52, 44 | titre, 3 lignes de résultat, boutons | 15 |
 | `note` | 136 | 60, 50 | message court (mail envoyé, copié, j'ouvre n8n…), se ferme seul après 2 s | — |
 
@@ -105,7 +105,7 @@ Centre vertical du bonhomme : 36 + (hauteur − 46) / 2, sauf `result` (y = 86).
 | louisraille.fr | `#38BDF8` |
 | Autres | prendre dans cet ordre : `#F472B6`, `#34D399`, `#FB923C`, `#60A5FA`, `#E879F9`, puis boucler |
 
-Nom d'une session Claude Code = nom du dossier de travail (`cwd`), avec une table d'alias réglable (ex. `sbe-hub` → « SBE Hub »). Nom d'un workflow n8n = nom du workflow.
+Nom d'une session Codex = nom du dossier de travail (`cwd`), avec une table d'alias réglable (ex. `sbe-hub` → « SBE Hub »). Nom d'un workflow n8n = nom du workflow.
 
 ## 7. Le personnage : Mochi
 
@@ -137,7 +137,7 @@ Porter la classe `Bot` du prototype **telle quelle** en Swift (`Canvas` dans `Ti
 
 Halo derrière le bonhomme : dégradé radial couleur de l'état, opacité 0,2 à 0,6 selon l'état (`glow`, `go`), flou 6.
 
-Correspondance avec les vrais événements : voir `INTEGRATIONS.md`. `sleeping` = aucune tâche depuis 10 min et island ouverte manuellement ; `ratelimit` = limite d'usage signalée par Claude Code.
+Correspondance avec les vrais événements : voir `INTEGRATIONS.md`. `sleeping` = aucune tâche depuis 10 min et island ouverte manuellement ; `ratelimit` = limite d'usage signalée par Codex.
 
 ### Émotes (`EMOTES`) et déclencheurs réels
 
@@ -186,9 +186,9 @@ Pas de son pour les mises à jour silencieuses (défilé de tâches, mini-bonhom
 Petit item dans la barre de menus (icône : silhouette du Mochi, monochrome). Menu : Ouvrir le notch, Lancer la démo (⌃⌥⌘D), Réglages…, Debug ▸ (forcer chaque vue, chaque état, chaque émote, ajouter des tâches factices), Quitter.
 
 Fenêtre Réglages (SwiftUI, simple) :
-- Clé API Anthropic (Trousseau), modèle (par défaut voir INTEGRATIONS §5).
+- Clé API OpenAI (Trousseau), modèle (par défaut voir INTEGRATIONS §5).
 - n8n : URL de l'instance, clé API (Trousseau), intervalle de polling, workflows suivis (tous par défaut).
-- Claude Code : état des hooks (installés / non), bouton Installer / Désinstaller, délai d'attente d'une décision (défaut 110 s).
+- Codex : état des hooks (installés / non), bouton Installer / Désinstaller, délai d'attente d'une décision (défaut 110 s).
 - Son on/off, volume. Fermeture auto (défaut 60 s). Délai d'absence (défaut 3 min).
 - Lancer au démarrage (`SMAppService.mainApp`).
 - Alias de noms de projets et couleurs.
@@ -202,16 +202,16 @@ Chaque jalon se termine par build + capture + comparaison aux références + com
 - **M2 Personnage** : port de `Bot` (Mochi), tous les états et émotes, mini-bonhommes, halo, badges, particules, mains. Pause quand masqué.
 - **M3 Vues** : toutes les vues §5, défilé, pastilles, colonne, élément partagé, voiles. Comparer avec les 16 captures.
 - **M4 Sons** : branchement §9, réglages son.
-- **M5 Claude Code** : hooks, approbations, questions, saut au terminal (INTEGRATIONS §1).
+- **M5 Codex** : hooks, approbations, questions, saut au terminal (INTEGRATIONS §1).
 - **M6 n8n** : polling, erreurs, relance, ouverture (INTEGRATIONS §2).
 - **M7 Fichiers** : glisser-déposer, prompt sur fichier, mail via Mail (INTEGRATIONS §3 et §6).
-- **M8 Fenêtres + recherche** : attache, capture, URL, API Claude avec recherche web, vue résultat (INTEGRATIONS §4 et §5).
+- **M8 Fenêtres + recherche** : attache, capture, URL, API ChatGPT avec recherche web, vue résultat (INTEGRATIONS §4 et §5).
 - **M9 Finition** : mode démo (DEMO.md), réglages complets, lancement au démarrage, écran sans notch, mesure CPU/RAM, passe finale de comparaison visuelle.
 
 ## 12. Critères d'acceptation
 
 - Côte à côte avec le prototype, Louis ne voit pas de différence sur le personnage, les couleurs, les timings et les sons.
 - Aucun clic perdu à cause de la fenêtre transparente.
-- Une session Claude Code n'est jamais bloquée par l'app (app fermée, plantée ou lente → le terminal prend le relais).
+- Une session Codex n'est jamais bloquée par l'app (app fermée, plantée ou lente → le terminal prend le relais).
 - Hidden = 0 % CPU ; compact < 3 % ; mémoire < 100 Mo.
 - La démo (⌃⌥⌘D) se filme d'une traite sans intervention.

@@ -2,23 +2,20 @@ name: Build
 
 on:
   push:
-    branches: [main]
+    branches: [main, chatgpt-codex]
   pull_request:
     branches: [main]
 
 jobs:
-  build:
+  macos:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
-
       - name: Install XcodeGen
         run: brew install xcodegen
-
       - name: Generate project
         run: cd NotchBuddy && xcodegen
-
-      - name: Build
+      - name: Build macOS
         run: |
           xcodebuild \
             -project NotchBuddy/NotchBuddy.xcodeproj \
@@ -27,3 +24,23 @@ jobs:
             build \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO
+
+  windows:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: windows
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: windows/package-lock.json
+      - name: Install dependencies
+        run: npm ci
+      - name: Build frontend and hook
+        run: npm run build
+      - name: Check Tauri backend
+        working-directory: windows/src-tauri
+        run: cargo check
